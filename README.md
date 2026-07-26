@@ -28,12 +28,20 @@ tabs, cores, preços e mídias vêm todos de lá.
 
 ### 1. Cloudflare Pages ligado ao repo
 
-Pages → **Create project** → **Connect to Git** → repositório `mesq2026`.
+O projeto Pages `mesq2026` **já existe** na conta Cloudflare do Guilherme, mas está
+como **Direct Upload** (conferido em 25/07/2026). Falta ligar no Git:
 
+Workers & Pages → `mesq2026` → **Settings** → **Build** → **Connect** → GitHub →
+`Guilhermehenrique777/mesq2026`.
+
+- Production branch: `main`
 - Build command: *(vazio)*
 - Build output directory: `/`
 
 Isso substitui o upload manual: todo push na `main` vira deploy.
+
+**Como saber se já está ligado:** na mesma tela, "Git repository" mostra `owner/repo`
+e a branch. Se mostrar o botão *Connect*, ainda não está.
 
 ### 2. GitHub OAuth App (pro painel)
 
@@ -49,7 +57,7 @@ Copie o **Client ID** e gere um **Client secret**.
 
 ### 3. Variáveis no Cloudflare Pages
 
-Settings → Environment variables (Production):
+Settings → **Variables and secrets** (Production) — hoje está vazio:
 
 - `GITHUB_CLIENT_ID`
 - `GITHUB_CLIENT_SECRET` *(marcar como Secret)*
