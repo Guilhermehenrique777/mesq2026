@@ -1,0 +1,253 @@
+{
+  "site": {
+    "whatsapp": "5511966050632",
+    "freteTexto": "Frete grátis para todo o Brasil em pedidos acima de R$ 199"
+  },
+  "secoes": [
+    {
+      "id": "kits",
+      "titulo": "Conjunto Top + Short",
+      "kits": [
+        {
+          "id": "esmeralda",
+          "rotulo": "Esmeralda",
+          "nome": "Kit Esmeralda",
+          "desc": "Modelagem estratégica em verde esmeralda vibrante. Tecido firme e confortável, ideal para treinos intensos ou para o dia a dia.",
+          "cor": "#5EA89A",
+          "cores": {
+            "fundo": "#E6EFED",
+            "tab": "#2A5555",
+            "letreiro": "#4A8888"
+          },
+          "tamanhos": [
+            "P",
+            "M",
+            "G"
+          ],
+          "precoPix": "R$ 179,90",
+          "preco3x": "R$ 71,66",
+          "midias": [
+            {
+              "tipo": "img",
+              "src": "midias/esmeralda-1.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/esmeralda-2.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/esmeralda-3.webp"
+            },
+            {
+              "tipo": "video",
+              "src": "midias/esmeralda-video.mp4",
+              "comAudio": false
+            }
+          ],
+          "frases": [
+            "MESQ.",
+            "Modelagem estratégica",
+            "Tecido firme e confortável",
+            "Ideal para treinos",
+            "Valoriza o corpo",
+            "Alta sustentação",
+            "Conforto no movimento",
+            "Tecido gelado",
+            "Bolso para celular",
+            "Estilo em movimento"
+          ]
+        },
+        {
+          "id": "cereja",
+          "rotulo": "Cereja",
+          "nome": "Kit Cereja",
+          "desc": "O vermelho cereja que chega com personalidade. Presença garantida dentro e fora da academia.",
+          "cor": "#C1323C",
+          "cores": {
+            "fundo": "#F0E8E8",
+            "tab": "#961E2D",
+            "letreiro": "#C1323C"
+          },
+          "tamanhos": [
+            "P",
+            "M",
+            "G"
+          ],
+          "precoPix": "R$ 179,90",
+          "preco3x": "R$ 71,66",
+          "midias": [
+            {
+              "tipo": "img",
+              "src": "midias/cereja-1.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/cereja-2.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/cereja-3.webp"
+            }
+          ],
+          "frases": [
+            "MESQ.",
+            "Presença garantida",
+            "Modelagem que abraça",
+            "Zero transparência",
+            "Tecido com brilho sutil",
+            "Do treino ao dia a dia",
+            "Conforto com estilo",
+            "Tecido gelado",
+            "Bolso para celular",
+            "Estilo em movimento"
+          ]
+        },
+        {
+          "id": "rose",
+          "rotulo": "Rosé",
+          "nome": "Kit Rosé",
+          "desc": "Delicadeza com firmeza. O rosé que modela, valoriza e entrega sofisticação em cada movimento.",
+          "cor": "#D98FA8",
+          "cores": {
+            "fundo": "#F0ECF0",
+            "tab": "#A0506E",
+            "letreiro": "#D98FA8"
+          },
+          "tamanhos": [
+            "G"
+          ],
+          "precoPix": "R$ 179,90",
+          "preco3x": "R$ 71,66",
+          "midias": [
+            {
+              "tipo": "img",
+              "src": "midias/rose-1.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/rose-2.webp"
+            },
+            {
+              "tipo": "video",
+              "src": "midias/rose-video.mp4",
+              "comAudio": false
+            }
+          ],
+          "frases": [
+            "MESQ.",
+            "Delicadeza com firmeza",
+            "Sofisticação em movimento",
+            "Modela as curvas",
+            "Alta performance",
+            "Alta sustentação",
+            "Valoriza o seu corpo",
+            "Tecido gelado",
+            "Bolso para celular",
+            "Estilo em movimento"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kits2",
+      "titulo": "Conjunto Top + Legging",
+      "kits": [
+        {
+          "id": "rubi",
+          "rotulo": "Rubi",
+          "nome": "Kit Rubi",
+          "desc": "Modela o corpo, valoriza as curvas e entrega conforto com zero transparência. Tecido com leve brilho sofisticado. Perfeito para treinar e sair pronta. Presença garantida.",
+          "cor": "#B03050",
+          "cores": {
+            "fundo": "#F0E8EA",
+            "tab": "#7A1E35",
+            "letreiro": "#B03050"
+          },
+          "tamanhos": [
+            "G"
+          ],
+          "precoPix": "R$ 199,00",
+          "preco3x": "R$ 78,83",
+          "midias": [
+            {
+              "tipo": "img",
+              "src": "midias/rubi-3.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/rubi-2.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/rubi-1.webp"
+            },
+            {
+              "tipo": "video",
+              "src": "midias/rubi-video.mp4",
+              "comAudio": true
+            }
+          ],
+          "frases": [
+            "MESQ.",
+            "Presença garantida",
+            "Valoriza as curvas",
+            "Zero transparência",
+            "Leve brilho sofisticado",
+            "Do treino à rua",
+            "Alta sustentação",
+            "Tecido gelado",
+            "Bolso para celular",
+            "Estilo em movimento"
+          ]
+        },
+        {
+          "id": "pacifico",
+          "rotulo": "Pacífico",
+          "nome": "Kit Pacífico",
+          "desc": "Modela o corpo, valoriza as curvas e entrega conforto com zero transparência. Tecido com leve brilho sofisticado. Perfeito para treinar e sair pronta. Presença garantida.",
+          "cor": "#7A9EC0",
+          "cores": {
+            "fundo": "#E8EDF5",
+            "tab": "#3A5A78",
+            "letreiro": "#7A9EC0"
+          },
+          "tamanhos": [
+            "P",
+            "M",
+            "G"
+          ],
+          "precoPix": "R$ 199,00",
+          "preco3x": "R$ 78,83",
+          "midias": [
+            {
+              "tipo": "img",
+              "src": "midias/pacifico-1.webp"
+            },
+            {
+              "tipo": "img",
+              "src": "midias/pacifico-2.webp"
+            },
+            {
+              "tipo": "video",
+              "src": "midias/pacifico-video.mp4",
+              "comAudio": true
+            }
+          ],
+          "frases": [
+            "MESQ.",
+            "Presença garantida",
+            "Azul que conquista",
+            "Zero transparência",
+            "Leve brilho sofisticado",
+            "Do treino à rua",
+            "Alta sustentação",
+            "Tecido gelado",
+            "Bolso para celular",
+            "Estilo em movimento"
+          ]
+        }
+      ]
+    }
+  ]
+}
