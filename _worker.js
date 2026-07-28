@@ -144,6 +144,7 @@ async function rota(request, env, url) {
 /* ===== conteúdo ===== */
 
 async function lerConteudo(env) {
+  if (!env.MQ) return SEMENTE; /* KV ainda não ligado no Cloudflare: serve a reserva em vez de quebrar o site */
   const salvo = await env.MQ.get(CHAVE_CONTEUDO, { type: 'json' });
   if (salvo && Array.isArray(salvo.secoes)) return salvo;
   return SEMENTE;
@@ -349,6 +350,7 @@ async function limparMidiaOrfa(env, conteudo) {
 
 async function login(request, env) {
   if (!env.ADMIN_SENHA) return json({ erro: 'Senha do painel ainda não configurada no Cloudflare.' }, 503);
+  if (!env.MQ) return json({ erro: 'Painel ainda não configurado (falta o KV no Cloudflare).' }, 503);
 
   const chaveIp = 'tent:' + (request.headers.get('cf-connecting-ip') || 'sem-ip');
   const tentativas = parseInt((await env.MQ.get(chaveIp)) || '0', 10);
