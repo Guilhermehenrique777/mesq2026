@@ -1,14 +1,685 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Painel MESQ.</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel MESQ.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --accent:#7A1030; --accent2:#9B1840;
+    --grad:linear-gradient(135deg,#7A1030 0%,#9B1840 100%);
+    --display:"Playfair Display",Georgia,serif;
+    --sans:"Inter",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    --radius:18px;
+    --ink:#1A1214; --muted:#7A6560; --line:rgba(122,16,48,.28);
+    --bg:#F7F2EE; --card:#fff; --campo:#fff;
+  }
+  [data-theme="dark"]{
+    --ink:#F2E8E0; --muted:#B8A39B; --line:rgba(155,24,64,.35);
+    --bg:#150F11; --card:#241A1D; --campo:#2E2022;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{font-family:var(--sans);color:var(--ink);background:var(--bg);-webkit-text-size-adjust:100%}
+  :focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+  button{font-family:var(--sans);cursor:pointer}
+
+  /* ===== botoes ===== */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:12px 18px;
+    border-radius:13px;border:1.6px solid transparent;font-family:var(--sans);font-weight:800;font-size:12.5px;
+    text-transform:uppercase;letter-spacing:1.4px;transition:filter .15s,transform .1s,background .15s}
+  .btn:active{transform:translateY(1px)}
+  .btn.pri{background:var(--grad);color:#fff}
+  .btn.pri:hover{filter:brightness(1.1)}
+  .btn.sec{background:var(--card);color:var(--ink);border-color:var(--line)}
+  .btn.sec:hover{border-color:var(--accent2)}
+  .btn.perigo{background:transparent;color:#e2455b;border-color:rgba(226,69,91,.45)}
+  .btn.perigo:hover{background:rgba(226,69,91,.1)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.full{width:100%}
+
+  /* ===== login ===== */
+  .capa{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:#150F11}
+  .capa .cx{width:100%;max-width:380px;background:var(--card);border:1.6px solid var(--line);border-radius:var(--radius);
+    padding:30px 26px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .marca{display:flex;align-items:center;gap:11px;margin-bottom:20px}
+  .marca .sim{width:42px;height:42px;border-radius:12px;background:var(--grad);display:grid;place-items:center;flex:none;
+    font-family:var(--display);font-weight:800;color:#fff;font-size:19px;font-style:italic}
+  .marca .tt{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.3px;line-height:1.15}
+  .marca .sb{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  .campo{display:block;margin-bottom:14px}
+  .campo>span{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+  input[type=text],input[type=password],textarea,select{
+    width:100%;background:var(--campo);color:var(--ink);border:1.6px solid var(--line);border-radius:13px;
+    padding:12px 14px;font-family:var(--sans);font-size:15px;min-height:46px}
+  textarea{resize:vertical;line-height:1.45}
+  input::placeholder,textarea::placeholder{color:var(--muted);opacity:.75}
+  input[type=color]{-webkit-appearance:none;appearance:none;width:52px;height:46px;padding:3px;border:1.6px solid var(--line);
+    border-radius:13px;background:var(--campo);flex:none}
+  input[type=color]::-webkit-color-swatch{border:none;border-radius:9px}
+
+  .aviso{display:none;margin:0 0 14px;padding:11px 13px;border-radius:12px;font-size:13px;font-weight:600;
+    background:rgba(226,69,91,.12);color:#e2455b;border:1.6px solid rgba(226,69,91,.35)}
+  .aviso.on{display:block}
+
+  /* ===== topo ===== */
+  .topo{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1.6px solid var(--line)}
+  .topo .in{max-width:900px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+  .topo .marca{margin:0;flex:1;min-width:0}
+  .icobtn{width:44px;height:44px;flex:none;border-radius:12px;border:1.6px solid var(--line);background:var(--campo);
+    color:var(--ink);display:inline-grid;place-items:center;font-size:17px}
+  .icobtn:hover{border-color:var(--accent2)}
+
+  .abas{max-width:900px;margin:0 auto;padding:14px 16px 0;display:flex;gap:8px}
+  .aba{flex:1;min-height:46px;border-radius:13px;border:1.6px solid var(--line);background:var(--card);color:var(--muted);
+    font-family:var(--sans);font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:1.1px;padding:10px 8px}
+  .aba.on{background:var(--grad);border-color:transparent;color:#fff}
+
+  .tela{max-width:900px;margin:0 auto;padding:16px 16px 120px}
+  .barra-topo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .barra-topo h2{font-family:var(--display);font-weight:800;font-size:15px;margin:0;flex:1}
+  .conta{font-size:11.5px;color:var(--muted);font-weight:600}
+
+  /* ===== lista ===== */
+  .lista{display:grid;gap:12px}
+  .item{background:var(--card);border:1.6px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+  .item.off{opacity:.55}
+  .item .corpo{display:flex;gap:12px;padding:13px 14px;align-items:flex-start}
+  .thumb{width:74px;height:74px;flex:none;border-radius:13px;background:var(--grad);background-size:cover;background-position:center;
+    display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:800;font-size:20px}
+  .info{flex:1;min-width:0}
+  .info .n{font-family:var(--display);font-weight:800;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+  .info .s{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4;overflow-wrap:anywhere}
+  .info .p{font-size:12.5px;font-weight:700;color:var(--accent2);margin-top:6px}
+  .selo{display:inline-block;margin-top:7px;font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+    padding:4px 9px;border-radius:99px;background:rgba(122,16,48,.14);color:var(--accent);border:1px solid rgba(122,16,48,.4)}
+  [data-theme="dark"] .selo{color:#e79bb0}
+  .acoes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 13px}
+  .acoes .btn{padding:10px 8px;font-size:10.5px;letter-spacing:1px}
+  .ord{display:grid;gap:6px;flex:none}
+  .mini{width:44px;height:44px;border-radius:12px;border:1.6px solid var(--line);background:var(--campo);
+    color:var(--ink);font-size:16px;line-height:1;display:grid;place-items:center}
+  .mini:hover:not(:disabled){border-color:var(--accent2)}
+  .mini:disabled{opacity:.3;cursor:not-allowed}
+
+  .vazio{background:var(--card);border:1.6px dashed var(--line);border-radius:var(--radius);padding:34px 20px;text-align:center}
+  .vazio p{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+
+  /* ===== rodape de publicar ===== */
+  .publicar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1.6px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .publicar .in{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .publicar .st{flex:1;min-width:0;font-size:12px;font-weight:700;color:var(--muted);line-height:1.35}
+  .publicar .st b{color:var(--accent2)}
+
+  /* ===== editor ===== */
+  .modal{position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center}
+  .modal.on{display:flex}
+  .modal .scrim{position:absolute;inset:0;background:rgba(10,4,6,.6);backdrop-filter:blur(4px)}
+  .modal .painel{position:relative;z-index:1;width:100%;max-width:560px;max-height:92dvh;overflow:auto;overscroll-behavior:contain;
+    background:var(--bg);border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+  .modal .cab{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .modal .cab h3{flex:1;margin:0;font-family:var(--display);font-weight:800;font-size:15px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{min-height:44px;padding:10px 18px;border-radius:13px;border:1.6px solid var(--line);background:var(--campo);
+    color:var(--ink);font-family:var(--sans);font-weight:800;font-size:13px}
+  .chip.on{background:var(--grad);border-color:transparent;color:#fff}
+  .corcampo{display:flex;gap:10px;align-items:center}
+  .corcampo input[type=text]{flex:1}
+  .dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .dica{font-size:11.5px;color:var(--muted);margin:-8px 0 14px;line-height:1.4}
+
+  /* ===== midias ===== */
+  .midias{display:grid;gap:8px;margin-bottom:10px}
+  .midia{display:flex;gap:10px;align-items:center;background:var(--campo);border:1.6px solid var(--line);border-radius:13px;padding:8px 10px}
+  .midia .mv{width:52px;height:52px;flex:none;border-radius:10px;background-size:cover;background-position:center;background-color:var(--line);
+    display:grid;place-items:center;font-size:18px}
+  .midia .mi{flex:1;min-width:0}
+  .midia .mi .t{font-size:12px;font-weight:700}
+  .midia .mi label{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
+  .midia .mord{display:flex;gap:4px;flex:none}
+  .midiamini{width:34px;height:34px;border-radius:9px;border:1.6px solid var(--line);background:var(--card);color:var(--ink);
+    font-size:13px;display:grid;place-items:center}
+  .midiamini:disabled{opacity:.3}
+  .midiamini.x{color:#e2455b;border-color:rgba(226,69,91,.45)}
+  .midiabotoes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+
+  /* ===== toast ===== */
+  .toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);z-index:80;opacity:0;pointer-events:none;
+    background:#150F11;color:#fff;padding:12px 18px;border-radius:13px;font-size:13px;font-weight:700;
+    box-shadow:0 18px 44px rgba(0,0,0,.5);transition:opacity .22s,transform .22s;max-width:88vw;text-align:center}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  .oculto{display:none !important}
+  @media (max-width:520px){ .acoes{grid-template-columns:1fr 1fr} .acoes .btn.larga{grid-column:1/-1} .dupla{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important;animation:none !important} }
+</style>
 </head>
 <body>
-  <!-- versão fixada de propósito: atualização automática já quebrou painel em produção -->
-  <script src="https://unpkg.com/@sveltia/cms@0.172.4/dist/sveltia-cms.js" type="module"></script>
+
+<!-- ===== login ===== -->
+<div class="capa" id="capa">
+  <form class="cx" id="formLogin">
+    <div class="marca">
+      <span class="sim">M</span>
+      <div>
+        <div class="tt">Painel MESQ.</div>
+        <div class="sb">Kits do catálogo</div>
+      </div>
+    </div>
+    <div class="aviso" id="erroLogin"></div>
+    <label class="campo"><span>Senha do painel</span>
+      <input type="password" id="senha" autocomplete="current-password" placeholder="Digite a senha" required></label>
+    <button class="btn pri full" id="btnEntrar" type="submit">Entrar</button>
+  </form>
+</div>
+
+<!-- ===== painel ===== -->
+<div id="app" class="oculto">
+  <header class="topo">
+    <div class="in">
+      <div class="marca">
+        <span class="sim">M</span>
+        <div>
+          <div class="tt">Painel MESQ.</div>
+          <div class="sb">O que sai no site</div>
+        </div>
+      </div>
+      <button class="icobtn" id="btnSenha" type="button" aria-label="Trocar senha" title="Trocar senha">🔑</button>
+      <button class="icobtn" id="btnTema" type="button" aria-label="Trocar tema">☀</button>
+      <button class="icobtn" id="btnSair" type="button" aria-label="Sair" title="Sair">⏻</button>
+    </div>
+    <nav class="abas">
+      <button class="aba on" id="abaKits" type="button">Top + Short</button>
+      <button class="aba" id="abaKits2" type="button">Top + Legging</button>
+    </nav>
+  </header>
+
+  <main class="tela">
+    <div class="barra-topo">
+      <h2 id="titulo">Top + Short</h2>
+      <span class="conta" id="conta"></span>
+    </div>
+    <div class="lista" id="lista"></div>
+    <div style="margin-top:14px"><button class="btn pri full" id="btnNovo" type="button">Novo kit</button></div>
+  </main>
+
+  <div class="publicar" id="rodape">
+    <div class="in">
+      <div class="st" id="status">Tudo publicado</div>
+      <button class="btn pri" id="btnPublicar" type="button" disabled>Publicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== trocar senha ===== -->
+<div class="modal" id="modalSenha" role="dialog" aria-modal="true" aria-label="Trocar senha">
+  <div class="scrim" id="senhaScrim"></div>
+  <div class="painel">
+    <div class="cab">
+      <h3>Trocar senha</h3>
+      <button class="icobtn" id="senhaFechar" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="aviso" id="erroSenha"></div>
+    <form id="formSenha">
+      <label class="campo"><span>Senha de agora</span>
+        <input type="password" id="senhaAtual" autocomplete="current-password"></label>
+      <label class="campo"><span>Senha nova</span>
+        <input type="password" id="senhaNova" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"></label>
+      <label class="campo"><span>Repita a senha nova</span>
+        <input type="password" id="senhaNova2" autocomplete="new-password"></label>
+      <p class="dica">Quem já estiver logado em outro aparelho continua dentro. Pra derrubar todo mundo, fale com o Guilherme.</p>
+      <div style="display:grid;gap:9px">
+        <button class="btn pri full" id="btnTrocarSenha" type="submit">Trocar senha</button>
+        <button class="btn sec full" id="senhaCancelar" type="button">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== editor ===== -->
+<div class="modal" id="editor" role="dialog" aria-modal="true" aria-label="Editar kit">
+  <div class="scrim" id="editorScrim"></div>
+  <div class="painel">
+    <div class="cab">
+      <h3 id="editorTitulo">Editar kit</h3>
+      <button class="icobtn" id="editorFechar" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="aviso" id="erroEditor"></div>
+    <form id="formEditor"></form>
+    <div style="display:grid;gap:9px;margin-top:6px">
+      <button class="btn pri full" id="btnAplicar" type="button">Salvar kit</button>
+      <button class="btn sec full" id="btnCancelar" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+var $=function(id){return document.getElementById(id);};
+var estado={kits:[],kits2:[]}, aba='kits', sujo=false, editando=null, rascunho=null;
+
+/* ===== tema ===== */
+var TEMA='mesq_admin_tema';
+function aplicarTema(t){
+  document.documentElement.setAttribute('data-theme',t);
+  $('btnTema').textContent = t==='dark' ? '☀' : '☾';
+  try{localStorage.setItem(TEMA,t);}catch(e){}
+}
+aplicarTema((function(){try{return localStorage.getItem(TEMA)||'dark';}catch(e){return 'dark';}})());
+$('btnTema').addEventListener('click',function(){
+  aplicarTema(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+});
+
+/* ===== utilidades ===== */
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function novoId(){return Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);}
+var tempoToast=null;
+function toast(msg){
+  var t=$('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(tempoToast); tempoToast=setTimeout(function(){t.classList.remove('on');},2600);
+}
+function mostrarErro(el,msg){
+  var a=$(el); a.textContent=msg||''; a.classList.toggle('on',!!msg);
+}
+function api(url,opcoes){
+  opcoes=opcoes||{};
+  return fetch(url,Object.assign({credentials:'same-origin'},opcoes)).then(function(r){
+    return r.json().catch(function(){return {};}).then(function(d){
+      if(!r.ok) throw new Error(d.erro||('Falha na conexão ('+r.status+')'));
+      return d;
+    });
+  });
+}
+function capaKit(k){
+  var m=(k.midias||[]).find(function(x){return x.tipo==='img';});
+  return m ? m.src : '';
+}
+
+/* ===== login ===== */
+$('formLogin').addEventListener('submit',function(e){
+  e.preventDefault();
+  var b=$('btnEntrar'); b.disabled=true; b.textContent='Entrando';
+  mostrarErro('erroLogin','');
+  api('/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({senha:$('senha').value})})
+    .then(abrirPainel)
+    .catch(function(err){ mostrarErro('erroLogin',err.message); })
+    .then(function(){ b.disabled=false; b.textContent='Entrar'; });
+});
+
+$('btnSair').addEventListener('click',function(){
+  if(sujo && !confirm('Existem alterações não publicadas. Sair mesmo assim?')) return;
+  api('/api/logout',{method:'POST'}).then(function(){location.reload();});
+});
+
+function abrirPainel(){
+  return api('/api/admin/conteudo').then(function(c){
+    var secKits=(c.secoes||[]).find(function(s){return s.id==='kits';});
+    var secKits2=(c.secoes||[]).find(function(s){return s.id==='kits2';});
+    estado.kits=(secKits&&secKits.kits)||[];
+    estado.kits2=(secKits2&&secKits2.kits)||[];
+    $('capa').classList.add('oculto'); $('app').classList.remove('oculto');
+    marcarLimpo(); render();
+  });
+}
+
+/* sessao ja valida: entra direto */
+api('/api/sessao').then(function(s){ if(s.ok) abrirPainel(); }).catch(function(){});
+
+/* ===== abas ===== */
+var TITULOS={kits:'Top + Short',kits2:'Top + Legging'};
+function trocarAba(nova){
+  aba=nova;
+  $('abaKits').classList.toggle('on',aba==='kits');
+  $('abaKits2').classList.toggle('on',aba==='kits2');
+  $('titulo').textContent=TITULOS[aba];
+  render();
+}
+$('abaKits').addEventListener('click',function(){trocarAba('kits');});
+$('abaKits2').addEventListener('click',function(){trocarAba('kits2');});
+
+/* ===== estado de publicacao ===== */
+function marcarSujo(){
+  sujo=true; $('btnPublicar').disabled=false;
+  $('status').innerHTML='<b>Alterações ainda não publicadas.</b> Toque em publicar pra aparecer no site.';
+}
+function marcarLimpo(){
+  sujo=false; $('btnPublicar').disabled=true;
+  $('status').textContent='Tudo publicado. O site está igual ao que você vê aqui.';
+}
+window.addEventListener('beforeunload',function(e){ if(sujo){e.preventDefault();e.returnValue='';} });
+
+/* ===== render ===== */
+function lista(){ return estado[aba]; }
+
+function render(){
+  var itens=lista(), alvo=$('lista');
+  var ativos=itens.filter(function(i){return i.ativo!==false;}).length;
+  $('conta').textContent = itens.length ? (ativos+' no ar de '+itens.length) : '';
+  if(!itens.length){
+    alvo.innerHTML='<div class="vazio"><p>Nenhum kit cadastrado aqui ainda.</p></div>';
+    return;
+  }
+  alvo.innerHTML=itens.map(function(it,i){
+    var off = it.ativo===false;
+    var cap = capaKit(it);
+    var fundo = cap ? ' style="background-image:url('+esc(cap)+')"' : '';
+    var rotulo = cap ? '' : (it.rotulo||'?').slice(0,1).toUpperCase();
+    var linha = [it.precoPix, it.preco3x?('3x de '+it.preco3x):''].filter(Boolean).join(' · ');
+    return '<article class="item'+(off?' off':'')+'">'+
+      '<div class="corpo">'+
+        '<div class="thumb"'+fundo+'>'+esc(rotulo)+'</div>'+
+        '<div class="info">'+
+          '<div class="n">'+esc(it.nome||'Sem nome')+'</div>'+
+          (it.desc?'<div class="s">'+esc(it.desc)+'</div>':'')+
+          (linha?'<div class="p">'+esc(linha)+'</div>':'')+
+          (off?'<span class="selo">Pausado</span>':'')+
+        '</div>'+
+        '<div class="ord">'+
+          '<button class="mini" data-acao="subir" data-i="'+i+'" aria-label="Subir na lista"'+(i===0?' disabled':'')+'>↑</button>'+
+          '<button class="mini" data-acao="descer" data-i="'+i+'" aria-label="Descer na lista"'+(i===itens.length-1?' disabled':'')+'>↓</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="acoes">'+
+        '<button class="btn sec" data-acao="editar" data-i="'+i+'">Editar</button>'+
+        '<button class="btn sec" data-acao="pausar" data-i="'+i+'">'+(off?'Ativar':'Pausar')+'</button>'+
+        '<button class="btn perigo larga" data-acao="excluir" data-i="'+i+'">Excluir</button>'+
+      '</div>'+
+    '</article>';
+  }).join('');
+}
+
+$('lista').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-acao]'); if(!b) return;
+  var i=+b.getAttribute('data-i'), acao=b.getAttribute('data-acao'), itens=lista();
+
+  if(acao==='editar'){ abrirEditor(i); return; }
+  if(acao==='subir'||acao==='descer'){
+    var j = acao==='subir' ? i-1 : i+1;
+    if(j<0||j>=itens.length) return;
+    var t=itens[i]; itens[i]=itens[j]; itens[j]=t;
+    marcarSujo(); render();
+    return;
+  }
+  if(acao==='pausar'){
+    itens[i].ativo = itens[i].ativo===false;
+    marcarSujo(); render();
+    toast(itens[i].ativo ? 'Voltou pro site' : 'Pausado. Some do site ao publicar.');
+    return;
+  }
+  if(acao==='excluir'){
+    if(!confirm('Excluir "'+(itens[i].nome||'este kit')+'"? Não dá pra desfazer depois de publicar.')) return;
+    itens.splice(i,1); marcarSujo(); render(); toast('Excluído');
+  }
+});
+
+/* ===== editor ===== */
+var TAMANHOS_POSSIVEIS=['P','M','G'];
+
+function abrirEditor(i){
+  var novo = i===null;
+  var base = novo
+    ? {id:novoId(),ativo:true,rotulo:'',nome:'',desc:'',cor:'#7A1030',tamanhos:['P','M','G'],precoPix:'',preco3x:'',midias:[],frases:[]}
+    : JSON.parse(JSON.stringify(lista()[i]));
+  editando=i; rascunho=base;
+  $('editorTitulo').textContent = novo ? 'Novo kit' : 'Editar kit';
+  mostrarErro('erroEditor','');
+  desenharForm();
+  $('editor').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+
+function fecharEditor(){
+  $('editor').classList.remove('on');
+  document.body.style.overflow='';
+  editando=null; rascunho=null;
+}
+
+function desenharForm(){
+  var html='';
+  html+='<label class="campo"><span>Nome do kit</span>'+
+    '<input type="text" data-k="nome" value="'+esc(rascunho.nome)+'" placeholder="Ex.: Kit Esmeralda"></label>';
+  html+='<label class="campo"><span>Rótulo da aba</span>'+
+    '<input type="text" data-k="rotulo" value="'+esc(rascunho.rotulo)+'" placeholder="Ex.: Esmeralda"></label>'+
+    '<p class="dica">Nome curto que aparece no botão de cada kit no site.</p>';
+  html+='<label class="campo"><span>Descrição</span>'+
+    '<textarea rows="3" data-k="desc" placeholder="Duas ou três frases sobre o kit.">'+esc(rascunho.desc)+'</textarea></label>';
+  html+='<label class="campo"><span>Cor do kit</span>'+
+    '<div class="corcampo"><input type="color" id="corPicker" value="'+esc(rascunho.cor)+'">'+
+    '<input type="text" id="corTexto" value="'+esc(rascunho.cor)+'" placeholder="#7A1030"></div></label>'+
+    '<p class="dica">As outras cores do card (fundo, tarja) são geradas automaticamente a partir dessa.</p>';
+  html+='<div class="campo"><span>Tamanhos</span><div class="chips" id="tamanhos">'+
+    TAMANHOS_POSSIVEIS.map(function(t){
+      return '<button class="chip'+(rascunho.tamanhos.indexOf(t)>=0?' on':'')+'" type="button" data-t="'+t+'">'+t+'</button>';
+    }).join('')+'</div></div>';
+  html+='<div class="dupla">'+
+    '<label class="campo"><span>Preço à vista (PIX)</span><input type="text" data-k="precoPix" value="'+esc(rascunho.precoPix)+'" placeholder="R$ 179,90"></label>'+
+    '<label class="campo"><span>Valor de 1 parcela</span><input type="text" data-k="preco3x" value="'+esc(rascunho.preco3x)+'" placeholder="R$ 71,66"></label>'+
+    '</div>'+
+    '<p class="dica">O valor de 1 parcela é multiplicado por 3 automaticamente no site. Nunca é o PIX dividido por 3.</p>';
+  html+='<label class="campo"><span>Frases do letreiro</span>'+
+    '<textarea rows="4" id="frasesTexto" placeholder="Uma frase por linha">'+esc((rascunho.frases||[]).join('\n'))+'</textarea></label>'+
+    '<p class="dica">Frases curtas que alternam embaixo das fotos, uma por linha.</p>';
+  html+='<div class="campo"><span>Fotos e vídeos</span><div class="midias" id="listaMidias"></div>'+
+    '<div class="midiabotoes">'+
+      '<button class="btn sec" id="btnAddFoto" type="button">Adicionar foto</button>'+
+      '<button class="btn sec" id="btnAddVideo" type="button">Adicionar vídeo</button>'+
+    '</div></div>'+
+    '<p class="dica">Fotos são reduzidas sozinhas antes de subir. Vídeos: até 40 MB, prefira clipes curtos (10 a 20 segundos).</p>';
+  $('formEditor').innerHTML=html;
+  desenharMidias();
+}
+
+function desenharMidias(){
+  var midias=rascunho.midias||[];
+  $('listaMidias').innerHTML = midias.length ? midias.map(function(m,i){
+    var prev = m.tipo==='img' ? ' style="background-image:url('+esc(m.src)+')"' : '';
+    var icone = m.tipo==='img' ? '' : '▶';
+    return '<div class="midia">'+
+      '<div class="mv"'+prev+'>'+icone+'</div>'+
+      '<div class="mi"><div class="t">'+(m.tipo==='img'?'Foto':'Vídeo')+' '+(i+1)+'</div>'+
+      (m.tipo==='video' ? '<label><input type="checkbox" data-mi="'+i+'" data-vid-audio '+(m.comAudio?'checked':'')+'> Tem áudio</label>' : '')+
+      '</div>'+
+      '<div class="mord">'+
+        '<button class="midiamini" data-macao="subir" data-mi="'+i+'" aria-label="Subir"'+(i===0?' disabled':'')+'>↑</button>'+
+        '<button class="midiamini" data-macao="descer" data-mi="'+i+'" aria-label="Descer"'+(i===midias.length-1?' disabled':'')+'>↓</button>'+
+        '<button class="midiamini x" data-macao="remover" data-mi="'+i+'" aria-label="Remover">✕</button>'+
+      '</div>'+
+    '</div>';
+  }).join('') : '<p class="dica" style="margin:0">Nenhuma foto ou vídeo ainda.</p>';
+}
+
+/* listeners do form ficam no container, que nunca e recriado */
+$('formEditor').addEventListener('submit',function(e){ e.preventDefault(); });
+$('formEditor').addEventListener('input',function(e){
+  if(!rascunho) return;
+  var k=e.target.getAttribute('data-k'); if(k){ rascunho[k]=e.target.value; return; }
+  if(e.target.id==='corTexto' && /^#[0-9a-fA-F]{6}$/.test(e.target.value)){
+    rascunho.cor=e.target.value.toLowerCase(); $('corPicker').value=rascunho.cor; return;
+  }
+  if(e.target.id==='corPicker'){
+    rascunho.cor=e.target.value; $('corTexto').value=rascunho.cor; return;
+  }
+  if(e.target.id==='frasesTexto'){
+    rascunho.frases=e.target.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+    return;
+  }
+  if(e.target.hasAttribute('data-vid-audio')){
+    var i=+e.target.getAttribute('data-mi');
+    rascunho.midias[i].comAudio=e.target.checked;
+  }
+});
+$('formEditor').addEventListener('click',function(e){
+  if(!rascunho) return;
+  var chip=e.target.closest('#tamanhos .chip');
+  if(chip){
+    var t=chip.getAttribute('data-t'), idx=rascunho.tamanhos.indexOf(t);
+    if(idx>=0) rascunho.tamanhos.splice(idx,1); else rascunho.tamanhos.push(t);
+    chip.classList.toggle('on',rascunho.tamanhos.indexOf(t)>=0);
+    return;
+  }
+  if(e.target.closest('#btnAddFoto')){ escolherFoto(); return; }
+  if(e.target.closest('#btnAddVideo')){ escolherVideo(); return; }
+  var mb=e.target.closest('button[data-macao]');
+  if(mb){
+    var i=+mb.getAttribute('data-mi'), macao=mb.getAttribute('data-macao'), midias=rascunho.midias;
+    if(macao==='remover'){ midias.splice(i,1); desenharMidias(); return; }
+    var j = macao==='subir' ? i-1 : i+1;
+    if(j<0||j>=midias.length) return;
+    var t2=midias[i]; midias[i]=midias[j]; midias[j]=t2;
+    desenharMidias();
+  }
+});
+
+$('btnNovo').addEventListener('click',function(){ abrirEditor(null); });
+$('btnCancelar').addEventListener('click',fecharEditor);
+$('editorFechar').addEventListener('click',fecharEditor);
+$('editorScrim').addEventListener('click',fecharEditor);
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape' && $('editor').classList.contains('on')) fecharEditor();
+});
+
+$('btnAplicar').addEventListener('click',function(){
+  if(!String(rascunho.nome||'').trim()){
+    mostrarErro('erroEditor','Preencha o nome do kit antes de salvar.');
+    return;
+  }
+  if(!String(rascunho.rotulo||'').trim()){
+    mostrarErro('erroEditor','Preencha o rótulo da aba antes de salvar.');
+    return;
+  }
+  var itens=lista();
+  if(editando===null) itens.push(rascunho); else itens[editando]=rascunho;
+  fecharEditor(); marcarSujo(); render(); toast('Salvo. Falta publicar.');
+});
+
+/* ===== foto ===== */
+function escolherFoto(){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.addEventListener('change',function(){
+    var f=inp.files && inp.files[0]; if(!f) return;
+    mostrarErro('erroEditor','');
+    toast('Enviando foto');
+    reduzir(f)
+      .then(function(blob){
+        return api('/api/admin/imagem',{method:'POST',headers:{'content-type':'image/jpeg'},body:blob});
+      })
+      .then(function(r){
+        rascunho.midias.push({tipo:'img',src:r.url});
+        desenharMidias(); toast('Foto adicionada');
+      })
+      .catch(function(err){ mostrarErro('erroEditor',err.message); });
+  });
+  inp.click();
+}
+
+function reduzir(arquivo){
+  return new Promise(function(ok,falha){
+    var img=new Image(), url=URL.createObjectURL(arquivo);
+    img.onload=function(){
+      var max=1400, l=img.width, a=img.height;
+      if(l>max||a>max){ var r=Math.min(max/l,max/a); l=Math.round(l*r); a=Math.round(a*r); }
+      var c=document.createElement('canvas'); c.width=l; c.height=a;
+      c.getContext('2d').drawImage(img,0,0,l,a);
+      c.toBlob(function(b){
+        URL.revokeObjectURL(url);
+        b ? ok(b) : falha(new Error('Não consegui processar essa imagem.'));
+      },'image/jpeg',0.85);
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); falha(new Error('Esse arquivo não é uma imagem válida.')); };
+    img.src=url;
+  });
+}
+
+/* ===== video ===== */
+function escolherVideo(){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='video/mp4,video/quicktime,video/webm';
+  inp.addEventListener('change',function(){
+    var f=inp.files && inp.files[0]; if(!f) return;
+    var ct = f.type || 'video/mp4';
+    if(['video/mp4','video/quicktime','video/webm'].indexOf(ct)<0){
+      mostrarErro('erroEditor','Formato não aceito. Use MP4, MOV ou WEBM.'); return;
+    }
+    if(f.size > 40*1024*1024){
+      mostrarErro('erroEditor','Vídeo acima de 40 MB. Grave um clipe mais curto ou comprima antes de subir.'); return;
+    }
+    mostrarErro('erroEditor','');
+    toast('Enviando vídeo, pode levar um instante');
+    api('/api/admin/video',{method:'POST',headers:{'content-type':ct},body:f})
+      .then(function(r){
+        rascunho.midias.push({tipo:'video',src:r.url,comAudio:false});
+        desenharMidias(); toast('Vídeo adicionado');
+      })
+      .catch(function(err){ mostrarErro('erroEditor',err.message); });
+  });
+  inp.click();
+}
+
+/* ===== trocar senha ===== */
+function abrirSenha(){
+  mostrarErro('erroSenha','');
+  $('senhaAtual').value=''; $('senhaNova').value=''; $('senhaNova2').value='';
+  $('modalSenha').classList.add('on');
+  document.body.style.overflow='hidden';
+  $('senhaAtual').focus();
+}
+function fecharSenha(){
+  $('modalSenha').classList.remove('on');
+  document.body.style.overflow='';
+}
+$('btnSenha').addEventListener('click',abrirSenha);
+$('senhaFechar').addEventListener('click',fecharSenha);
+$('senhaCancelar').addEventListener('click',fecharSenha);
+$('senhaScrim').addEventListener('click',fecharSenha);
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape' && $('modalSenha').classList.contains('on')) fecharSenha();
+});
+$('formSenha').addEventListener('submit',function(e){
+  e.preventDefault();
+  var nova=$('senhaNova').value;
+  if(nova!==$('senhaNova2').value){ mostrarErro('erroSenha','As duas senhas novas estão diferentes.'); return; }
+  if(nova.length<8){ mostrarErro('erroSenha','A senha nova precisa de 8 caracteres ou mais.'); return; }
+  var b=$('btnTrocarSenha'); b.disabled=true; b.textContent='Trocando';
+  mostrarErro('erroSenha','');
+  api('/api/admin/senha',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({atual:$('senhaAtual').value,nova:nova})})
+    .then(function(){ fecharSenha(); toast('Senha trocada. Use a nova no próximo login.'); })
+    .catch(function(err){ mostrarErro('erroSenha',err.message); })
+    .then(function(){ b.disabled=false; b.textContent='Trocar senha'; });
+});
+
+/* ===== publicar ===== */
+$('btnPublicar').addEventListener('click',function(){
+  var b=$('btnPublicar'); b.disabled=true; b.textContent='Publicando';
+  var corpo={secoes:[{id:'kits',kits:estado.kits},{id:'kits2',kits:estado.kits2}]};
+  api('/api/admin/conteudo',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(corpo)})
+    .then(function(c){
+      var secKits=(c.secoes||[]).find(function(s){return s.id==='kits';});
+      var secKits2=(c.secoes||[]).find(function(s){return s.id==='kits2';});
+      estado.kits=(secKits&&secKits.kits)||[];
+      estado.kits2=(secKits2&&secKits2.kits)||[];
+      marcarLimpo(); render(); toast('Publicado. Já está no ar.');
+    })
+    .catch(function(err){
+      marcarSujo();
+      toast(err.message);
+    })
+    .then(function(){ b.textContent='Publicar'; });
+});
+
+})();
+</script>
 </body>
 </html>

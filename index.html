@@ -2720,9 +2720,9 @@
   <!-- ── JS: carrega o conteúdo do painel e monta as seções ──── -->
   <script>
   (function(){
-    /* cache-bust leve: o Cloudflare Pages serve JSON com cache curto,
-       mas o navegador da Cá pode segurar a versão antiga depois de editar */
-    fetch('data/conteudo.json?v=' + Date.now(), { cache: 'no-store' })
+    /* conteúdo vem da API do painel (_worker.js + Cloudflare KV), que serve o
+       fallback data/conteudo.json enquanto ninguém salvou nada por lá */
+    fetch('/api/conteudo', { cache: 'no-store' })
       .then(function(r){
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
@@ -2737,7 +2737,7 @@
         if (s2 && s2.kits && s2.kits.length) window.__initSec2(s2, site);
       })
       .catch(function(e){
-        console.error('Falha ao carregar data/conteudo.json:', e);
+        console.error('Falha ao carregar /api/conteudo:', e);
         document.querySelectorAll('.secao-kits').forEach(function(sec){
           sec.insertAdjacentHTML('beforeend',
             '<p style="padding:24px;text-align:center;color:#8C7070;font-size:13px">' +
