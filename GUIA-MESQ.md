@@ -99,7 +99,7 @@ Antes de excluir, confirme se aquele kit não será usado novamente.
 
 Toque no ícone de chave. A nova senha precisa ter pelo menos 12 caracteres.
 
-Ao trocar a senha, os outros celulares e computadores conectados são desconectados. Guarde a nova senha em um gerenciador de senhas.
+Ao trocar a senha, somente os outros celulares e computadores conectados com o acesso da Cá são desconectados. O acesso técnico separado do Guilherme não é alterado. Guarde a nova senha em um gerenciador de senhas.
 
 ## Se algo não aparecer
 
