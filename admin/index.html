@@ -197,7 +197,7 @@
         <span class="sim">M</span>
         <div>
           <div class="tt">Painel MESQ.</div>
-          <div class="sb">O que sai no site</div>
+          <div class="sb" id="perfilAcesso">O que sai no site</div>
         </div>
       </div>
       <button class="icobtn" id="btnSenha" type="button" aria-label="Trocar senha" title="Trocar senha">🔑</button>
@@ -287,7 +287,7 @@
 'use strict';
 
 var $=function(id){return document.getElementById(id);};
-var estado={kits:[],kits2:[],site:{}}, aba='kits', sujo=false, editando=null, rascunho=null;
+var estado={kits:[],kits2:[],site:{}}, aba='kits', sujo=false, editando=null, rascunho=null, perfil='camila';
 
 /* ===== tema ===== */
 var TEMA='mesq_admin_tema';
@@ -350,7 +350,7 @@ $('formLogin').addEventListener('submit',function(e){
   var b=$('btnEntrar'); b.disabled=true; b.textContent='Entrando';
   mostrarErro('erroLogin','');
   api('/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({senha:$('senha').value})})
-    .then(abrirPainel)
+    .then(function(s){ return abrirPainel(s.perfil); })
     .catch(function(err){ mostrarErro('erroLogin',err.message); })
     .then(function(){ b.disabled=false; b.textContent='Entrar'; });
 });
@@ -360,7 +360,10 @@ $('btnSair').addEventListener('click',function(){
   api('/api/logout',{method:'POST'}).then(function(){location.reload();});
 });
 
-function abrirPainel(){
+function abrirPainel(perfilRecebido){
+  if(perfilRecebido==='camila'||perfilRecebido==='guilherme') perfil=perfilRecebido;
+  $('btnSenha').classList.toggle('oculto',perfil!=='camila');
+  $('perfilAcesso').textContent=perfil==='guilherme' ? 'Acesso Guilherme' : 'Acesso Camila';
   return api('/api/admin/conteudo').then(function(c){
     var secKits=(c.secoes||[]).find(function(s){return s.id==='kits';});
     var secKits2=(c.secoes||[]).find(function(s){return s.id==='kits2';});
@@ -373,7 +376,7 @@ function abrirPainel(){
 }
 
 /* sessao ja valida: entra direto */
-api('/api/sessao').then(function(s){ if(s.ok) abrirPainel(); }).catch(function(){});
+api('/api/sessao').then(function(s){ if(s.ok) abrirPainel(s.perfil); }).catch(function(){});
 
 /* ===== abas ===== */
 var TITULOS={kits:'Top + Short',kits2:'Top + Legging',capa:'Capa do site'};

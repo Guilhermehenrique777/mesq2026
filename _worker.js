@@ -5,8 +5,9 @@
    este arquivo responde /api/* e delega todo o resto pros arquivos estáticos (env.ASSETS).
 
    Secrets no projeto Pages:
-     ADMIN_SENHA   (obrigatório) senha inicial do painel
-     ADMIN_SECRET  (obrigatório) chave que assina o cookie de sessão
+     ADMIN_SENHA              (obrigatório) senha inicial da Camila
+     ADMIN_GUILHERME_SENHA    (opcional) acesso independente do Guilherme
+     ADMIN_SECRET             (obrigatório) chave que assina o cookie de sessão
 
    Bindings no projeto Pages (Settings → Bindings):
      MQ        KV namespace
@@ -144,15 +145,19 @@ async function rota(request, env, url) {
   if (p.indexOf('/api/video/') === 0 && m === 'GET') return video(request, env, p.slice(11));
   if (p === '/api/login' && m === 'POST') return login(request, env);
   if (p === '/api/logout' && m === 'POST') return logout();
-  if (p === '/api/sessao' && m === 'GET') return json({ ok: await autorizado(request, env) });
+  if (p === '/api/sessao' && m === 'GET') {
+    const perfil = await perfilAutorizado(request, env);
+    return json({ ok: !!perfil, perfil: perfil || null });
+  }
 
   if (p.indexOf('/api/admin/') === 0) {
-    if (!(await autorizado(request, env))) return json({ erro: 'Sessão expirada. Entre de novo.' }, 401);
+    const perfil = await perfilAutorizado(request, env);
+    if (!perfil) return json({ erro: 'Sessão expirada. Entre de novo.' }, 401);
     if (p === '/api/admin/conteudo' && m === 'GET') return json(await lerConteudo(env));
     if (p === '/api/admin/conteudo' && m === 'PUT') return salvarConteudo(request, env);
     if (p === '/api/admin/imagem' && m === 'POST') return uploadImagem(request, env);
     if (p === '/api/admin/video' && m === 'POST') return uploadVideo(request, env);
-    if (p === '/api/admin/senha' && m === 'POST') return trocarSenha(request, env);
+    if (p === '/api/admin/senha' && m === 'POST') return trocarSenha(request, env, perfil);
   }
   return json({ erro: 'Rota não encontrada' }, 404);
 }
@@ -490,12 +495,13 @@ async function login(request, env) {
   try { corpo = await request.json(); } catch (e) {}
 
   const senha = typeof corpo.senha === 'string' ? corpo.senha : '';
-  if (senha.length > 128 || !(await conferirSenha(env, senha))) {
+  const perfil = senha.length <= 128 ? await conferirCredencial(env, senha) : '';
+  if (!perfil) {
     await env.MQ.put(chaveIp, String(tentativas + 1), { expirationTtl: 600 });
     return json({ erro: 'Senha incorreta' }, 401);
   }
   await env.MQ.delete(chaveIp);
-  return json({ ok: true }, 200, { 'set-cookie': await cookieSessao(env) });
+  return json({ ok: true, perfil: perfil }, 200, { 'set-cookie': await cookieSessao(env, perfil) });
 }
 
 function logout() {
@@ -504,13 +510,16 @@ function logout() {
   });
 }
 
-async function trocarSenha(request, env) {
+async function trocarSenha(request, env, perfil) {
+  if (perfil !== 'camila') {
+    return json({ erro: 'A senha do acesso Guilherme é gerenciada separadamente no Cloudflare.' }, 403);
+  }
   let corpo = {};
   try { corpo = await request.json(); } catch (e) {}
   const nova = typeof corpo.nova === 'string' ? corpo.nova : '';
   if (nova.length < 12) return json({ erro: 'A senha nova precisa de 12 caracteres ou mais.' }, 400);
   if (nova.length > 128) return json({ erro: 'A senha nova precisa ter no máximo 128 caracteres.' }, 400);
-  if (!(await conferirSenha(env, typeof corpo.atual === 'string' ? corpo.atual : ''))) {
+  if (!(await conferirSenhaCamila(env, typeof corpo.atual === 'string' ? corpo.atual : ''))) {
     return json({ erro: 'A senha atual está errada.' }, 401);
   }
   const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
@@ -520,12 +529,12 @@ async function trocarSenha(request, env) {
     salt: salt,
     hash: await assinar(env, 'senha-v2:' + salt + ':' + nova)
   }));
-  await env.MQ.put('sessao:versao', crypto.randomUUID());
-  return json({ ok: true }, 200, { 'set-cookie': await cookieSessao(env) });
+  await env.MQ.put('sessao:versao:camila', crypto.randomUUID());
+  return json({ ok: true, perfil: 'camila' }, 200, { 'set-cookie': await cookieSessao(env, 'camila') });
 }
 
 /* Senha do KV (trocada pelo painel) manda; sem ela, vale o secret ADMIN_SENHA. */
-async function conferirSenha(env, enviada) {
+async function conferirSenhaCamila(env, enviada) {
   const guardada = await env.MQ.get('senha', { type: 'json' });
   if (guardada && guardada.versao === 2 && guardada.algoritmo === 'hmac-sha256-pepper' &&
       /^[0-9a-f]{32}$/i.test(guardada.salt || '') && typeof guardada.hash === 'string') {
@@ -542,26 +551,37 @@ async function conferirSenha(env, enviada) {
   return igualSeguro(par[0], par[1]);
 }
 
-async function cookieSessao(env) {
+async function conferirCredencial(env, enviada) {
+  if (await conferirSenhaCamila(env, enviada)) return 'camila';
+  const mestre = env.ADMIN_GUILHERME_SENHA || '';
+  if (!mestre) return '';
+  const par = await Promise.all([assinar(env, 'g:' + enviada), assinar(env, 'g:' + mestre)]);
+  return igualSeguro(par[0], par[1]) ? 'guilherme' : '';
+}
+
+async function cookieSessao(env, perfil) {
+  if (perfil !== 'camila' && perfil !== 'guilherme') throw new Error('Perfil de sessão inválido');
   const exp = Date.now() + SESSAO_DIAS * 86400000;
-  const versao = (await env.MQ.get('sessao:versao')) || '1';
-  const base = exp + '.' + versao;
+  const versao = (await env.MQ.get('sessao:versao:' + perfil)) || '1';
+  const base = exp + '.' + perfil + '.' + versao;
   const token = base + '.' + (await assinar(env, base));
   return COOKIE + '=' + token + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=' + SESSAO_DIAS * 86400;
 }
 
-async function autorizado(request, env) {
-  if (!env.ADMIN_SENHA || !env.ADMIN_SECRET || !env.MQ) return false;
+async function perfilAutorizado(request, env) {
+  if (!env.ADMIN_SECRET || !env.MQ) return '';
   const cookie = request.headers.get('cookie') || '';
   const achado = cookie.match(new RegExp('(?:^|;\\s*)' + COOKIE + '=([^;]+)'));
-  if (!achado) return false;
+  if (!achado) return '';
   const partes = achado[1].split('.');
-  if (partes.length !== 3) return false;
+  if (partes.length !== 4) return '';
   const exp = parseInt(partes[0], 10);
-  if (!exp || exp < Date.now()) return false;
-  const versao = (await env.MQ.get('sessao:versao')) || '1';
-  if (!igualSeguro(partes[1], versao)) return false;
-  return igualSeguro(await assinar(env, partes[0] + '.' + partes[1]), partes[2]);
+  const perfil = partes[1];
+  if (!exp || exp < Date.now() || (perfil !== 'camila' && perfil !== 'guilherme')) return '';
+  const versao = (await env.MQ.get('sessao:versao:' + perfil)) || '1';
+  if (!igualSeguro(partes[2], versao)) return '';
+  const base = partes[0] + '.' + perfil + '.' + partes[2];
+  return igualSeguro(await assinar(env, base), partes[3]) ? perfil : '';
 }
 
 function igualSeguro(a, b) {
