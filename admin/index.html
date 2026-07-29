@@ -137,8 +137,10 @@
   /* ===== midias ===== */
   .midias{display:grid;gap:8px;margin-bottom:10px}
   .midia{display:flex;gap:10px;align-items:center;background:var(--campo);border:1.6px solid var(--line);border-radius:13px;padding:8px 10px}
-  .midia .mv{width:52px;height:52px;flex:none;border-radius:10px;background-size:cover;background-position:center;background-color:var(--line);
-    display:grid;place-items:center;font-size:18px}
+  .midia .mv{width:64px;height:64px;flex:none;border-radius:10px;background-size:cover;background-position:center;background-color:var(--line);
+    display:grid;place-items:center;font-size:18px;overflow:hidden;border:none;padding:0;cursor:pointer}
+  .midia .mv video,.midia .mv img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+  .midia .mv:hover{outline:2px solid var(--accent2);outline-offset:-2px}
   .midia .mi{flex:1;min-width:0}
   .midia .mi .t{font-size:12px;font-weight:700}
   .midia .mi label{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
@@ -154,6 +156,10 @@
     background:#150F11;color:#fff;padding:12px 18px;border-radius:13px;font-size:13px;font-weight:700;
     box-shadow:0 18px 44px rgba(0,0,0,.5);transition:opacity .22s,transform .22s;max-width:88vw;text-align:center}
   .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  .lightbox{z-index:70}
+  .lightbox .painel{max-width:min(92vw,720px);padding:12px;background:#0a0608;display:grid;gap:10px;border-radius:22px}
+  .lightbox img,.lightbox video{width:100%;max-height:76vh;border-radius:14px;display:block;object-fit:contain;background:#000}
 
   .oculto{display:none !important}
   @media (max-width:520px){ .acoes{grid-template-columns:1fr 1fr} .acoes .btn.larga{grid-column:1/-1} .dupla{grid-template-columns:1fr} }
@@ -257,6 +263,16 @@
       <button class="btn pri full" id="btnAplicar" type="button">Salvar kit</button>
       <button class="btn sec full" id="btnCancelar" type="button">Cancelar</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== ver foto/video grande ===== -->
+<div class="modal lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Ver mídia">
+  <div class="scrim" id="lightboxScrim"></div>
+  <div class="painel">
+    <img id="lightboxImg" class="oculto" alt="">
+    <video id="lightboxVideo" class="oculto" controls playsinline></video>
+    <button class="btn sec full" id="lightboxFechar" type="button">Fechar</button>
   </div>
 </div>
 
@@ -503,10 +519,11 @@ function desenharForm(){
 function desenharMidias(){
   var midias=rascunho.midias||[];
   $('listaMidias').innerHTML = midias.length ? midias.map(function(m,i){
-    var prev = m.tipo==='img' ? ' style="background-image:url('+esc(m.src)+')"' : '';
-    var icone = m.tipo==='img' ? '' : '▶';
+    var prev = m.tipo==='img'
+      ? '<img src="'+esc(m.src)+'" alt="">'
+      : '<video src="'+esc(m.src)+'#t=0.1" muted preload="metadata"></video>';
     return '<div class="midia">'+
-      '<div class="mv"'+prev+'>'+icone+'</div>'+
+      '<button type="button" class="mv" data-macao="ver" data-mi="'+i+'" aria-label="Ver grande">'+prev+'</button>'+
       '<div class="mi"><div class="t">'+(m.tipo==='img'?'Foto':'Vídeo')+' '+(i+1)+'</div>'+
       (m.tipo==='video' ? '<label><input type="checkbox" data-mi="'+i+'" data-vid-audio '+(m.comAudio?'checked':'')+'> Tem áudio</label>' : '')+
       '</div>'+
@@ -553,6 +570,7 @@ $('formEditor').addEventListener('click',function(e){
   var mb=e.target.closest('button[data-macao]');
   if(mb){
     var i=+mb.getAttribute('data-mi'), macao=mb.getAttribute('data-macao'), midias=rascunho.midias;
+    if(macao==='ver'){ abrirLightbox(midias[i]); return; }
     if(macao==='remover'){ midias.splice(i,1); desenharMidias(); return; }
     var j = macao==='subir' ? i-1 : i+1;
     if(j<0||j>=midias.length) return;
@@ -566,7 +584,7 @@ $('btnCancelar').addEventListener('click',fecharEditor);
 $('editorFechar').addEventListener('click',fecharEditor);
 $('editorScrim').addEventListener('click',fecharEditor);
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape' && $('editor').classList.contains('on')) fecharEditor();
+  if(e.key==='Escape' && $('editor').classList.contains('on') && !$('lightbox').classList.contains('on')) fecharEditor();
 });
 
 $('btnAplicar').addEventListener('click',function(){
@@ -646,6 +664,30 @@ function escolherVideo(){
   });
   inp.click();
 }
+
+/* ===== ver foto/video grande ===== */
+function abrirLightbox(m){
+  var img=$('lightboxImg'), vid=$('lightboxVideo');
+  if(m.tipo==='img'){
+    img.src=m.src; img.classList.remove('oculto');
+    vid.classList.add('oculto'); vid.pause(); vid.removeAttribute('src'); vid.load();
+  } else {
+    vid.src=m.src; vid.classList.remove('oculto');
+    img.classList.add('oculto'); img.removeAttribute('src');
+  }
+  $('lightbox').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function fecharLightbox(){
+  $('lightbox').classList.remove('on');
+  document.body.style.overflow = $('editor').classList.contains('on') ? 'hidden' : '';
+  var vid=$('lightboxVideo'); vid.pause();
+}
+$('lightboxFechar').addEventListener('click',fecharLightbox);
+$('lightboxScrim').addEventListener('click',fecharLightbox);
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape' && $('lightbox').classList.contains('on')) fecharLightbox();
+});
 
 /* ===== trocar senha ===== */
 function abrirSenha(){
