@@ -13,12 +13,11 @@
      MQMEDIA   R2 bucket
 
    Sobre a senha: quando a Cá troca a senha pelo painel, o hash PBKDF2 vai pro KV
-   (chave "senha") e passa a valer no lugar do ADMIN_SENHA. A chave que assina a sessão
-   é o ADMIN_SECRET e NÃO muda junto, então trocar a senha não derruba sessões abertas
-   em outros aparelhos. Pra derrubar todas, trocar o ADMIN_SECRET pelo wrangler. */
+   (chave "senha") e passa a valer no lugar do ADMIN_SENHA. A troca também gira a versão
+   da sessão: o aparelho atual recebe um cookie novo e os demais precisam entrar de novo. */
 
-const COOKIE = 'mesq_adm';
-const SESSAO_DIAS = 30;
+const COOKIE = '__Host-mesq_adm';
+const SESSAO_DIAS = 14;
 const IMG_MAX = 4 * 1024 * 1024;
 const VIDEO_MAX = 40 * 1024 * 1024;
 const CHAVE_CONTEUDO = 'conteudo';
@@ -26,6 +25,7 @@ const TENTATIVAS_MAX = 12;
 const KITS_MAX = 20;
 const MIDIAS_MAX = 8;
 const FRASES_MAX = 15;
+const BENEFICIOS_MAX = 6;
 const PBKDF2_ITER = 120000;
 
 /* Conteúdo inicial: os mesmos kits que já estavam fixos em data/conteudo.json.
@@ -37,7 +37,8 @@ const SEMENTE = {
     whatsapp: '5511966050632',
     freteTexto: 'Frete grátis para todo o Brasil em pedidos acima de R$ 199',
     colecaoNome: 'Coleção',
-    colecaoAno: '2026'
+    colecaoAno: '2026',
+    corCapa: '#1A1214'
   },
   secoes: [
     {
@@ -48,6 +49,7 @@ const SEMENTE = {
           desc: 'Modelagem estratégica em verde esmeralda vibrante. Tecido firme e confortável, ideal para treinos intensos ou para o dia a dia.',
           cor: '#5EA89A', cores: { fundo: '#E6EFED', tab: '#2A5555', letreiro: '#4A8888' },
           tamanhos: ['P', 'M', 'G'], precoPix: 'R$ 179,90', preco3x: 'R$ 71,66',
+          beneficios: ['Bojo incluso', 'Bolso no short', 'Tecido Trilobal', 'Alta sustentação'],
           midias: [
             { tipo: 'img', src: 'midias/esmeralda-1.webp' },
             { tipo: 'img', src: 'midias/esmeralda-2.webp' },
@@ -59,6 +61,7 @@ const SEMENTE = {
           desc: 'O vermelho cereja que chega com personalidade. Presença garantida dentro e fora da academia.',
           cor: '#C1323C', cores: { fundo: '#F0E8E8', tab: '#961E2D', letreiro: '#C1323C' },
           tamanhos: ['P', 'M', 'G'], precoPix: 'R$ 179,90', preco3x: 'R$ 71,66',
+          beneficios: ['Bojo incluso', 'Bolso no short', 'Tecido Trilobal', 'Alta sustentação'],
           midias: [
             { tipo: 'img', src: 'midias/cereja-1.webp' },
             { tipo: 'img', src: 'midias/cereja-2.webp' },
@@ -69,6 +72,7 @@ const SEMENTE = {
           desc: 'Delicadeza com firmeza. O rosé que modela, valoriza e entrega sofisticação em cada movimento.',
           cor: '#D98FA8', cores: { fundo: '#F0ECF0', tab: '#A0506E', letreiro: '#D98FA8' },
           tamanhos: ['G'], precoPix: 'R$ 179,90', preco3x: 'R$ 71,66',
+          beneficios: ['Bojo incluso', 'Bolso no short', 'Tecido Trilobal', 'Alta sustentação'],
           midias: [
             { tipo: 'img', src: 'midias/rose-1.webp' },
             { tipo: 'img', src: 'midias/rose-2.webp' },
@@ -85,6 +89,7 @@ const SEMENTE = {
           desc: 'Modela o corpo, valoriza as curvas e entrega conforto com zero transparência. Tecido com leve brilho sofisticado. Perfeito para treinar e sair pronta. Presença garantida.',
           cor: '#B03050', cores: { fundo: '#F0E8EA', tab: '#7A1E35', letreiro: '#B03050' },
           tamanhos: ['G'], precoPix: 'R$ 199,00', preco3x: 'R$ 78,83',
+          beneficios: ['Bojo incluso', 'Zero transparência', 'Tecido Trilobal', 'Leve brilho'],
           midias: [
             { tipo: 'img', src: 'midias/rubi-3.webp' },
             { tipo: 'img', src: 'midias/rubi-2.webp' },
@@ -96,6 +101,7 @@ const SEMENTE = {
           desc: 'Modela o corpo, valoriza as curvas e entrega conforto com zero transparência. Tecido com leve brilho sofisticado. Perfeito para treinar e sair pronta. Presença garantida.',
           cor: '#7A9EC0', cores: { fundo: '#E8EDF5', tab: '#3A5A78', letreiro: '#7A9EC0' },
           tamanhos: ['P', 'M', 'G'], precoPix: 'R$ 199,00', preco3x: 'R$ 78,83',
+          beneficios: ['Bojo incluso', 'Zero transparência', 'Tecido Trilobal', 'Leve brilho'],
           midias: [
             { tipo: 'img', src: 'midias/pacifico-1.webp' },
             { tipo: 'img', src: 'midias/pacifico-2.webp' },
@@ -110,20 +116,28 @@ const SEMENTE = {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    let response;
     if (url.pathname.indexOf('/api/') === 0) {
       try {
-        return await rota(request, env, url);
+        response = await rota(request, env, url);
       } catch (err) {
-        return json({ erro: (err && err.message) || 'Falha inesperada' }, 500);
+        console.error('Falha na API MESQ.', err);
+        response = json({ erro: 'Falha inesperada. Tente de novo.' }, 500);
       }
+    } else {
+      response = await env.ASSETS.fetch(request);
     }
-    return env.ASSETS.fetch(request);
+    return comCabecalhos(response, url);
   }
 };
 
 async function rota(request, env, url) {
   const p = url.pathname;
   const m = request.method;
+
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].indexOf(m) >= 0 && !origemPermitida(request, url)) {
+    return json({ erro: 'Origem da requisição não permitida.' }, 403);
+  }
 
   if (p === '/api/conteudo' && m === 'GET') return conteudoPublico(env);
   if (p.indexOf('/api/img/') === 0 && m === 'GET') return imagem(env, p.slice(9));
@@ -143,6 +157,50 @@ async function rota(request, env, url) {
   return json({ erro: 'Rota não encontrada' }, 404);
 }
 
+function origemPermitida(request, url) {
+  const contexto = request.headers.get('sec-fetch-site');
+  if (contexto === 'cross-site') return false;
+  const origem = request.headers.get('origin');
+  if (origem) return origem === url.origin;
+  const referencia = request.headers.get('referer');
+  if (!referencia) return false;
+  try { return new URL(referencia).origin === url.origin; } catch (e) { return false; }
+}
+
+function comCabecalhos(response, url) {
+  const h = new Headers(response.headers);
+  const ehAdmin = url.pathname === '/admin' || url.pathname.indexOf('/admin/') === 0;
+  const ehApi = url.pathname.indexOf('/api/') === 0;
+  const ehHtml = (h.get('content-type') || '').indexOf('text/html') >= 0;
+
+  h.delete('access-control-allow-origin');
+  h.set('x-content-type-options', 'nosniff');
+  h.set('referrer-policy', 'strict-origin-when-cross-origin');
+  h.set('x-frame-options', 'DENY');
+  h.set('permissions-policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+  h.set('strict-transport-security', 'max-age=31536000');
+
+  if (ehAdmin || ehApi) {
+    h.set('cache-control', 'no-store');
+    h.set('x-robots-tag', 'noindex, nofollow');
+  }
+  if (ehHtml) {
+    h.set('content-security-policy',
+      "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; " +
+      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; " +
+      "media-src 'self' blob:; connect-src 'self'; upgrade-insecure-requests");
+  } else if (ehApi) {
+    h.set('content-security-policy', "default-src 'none'; frame-ancestors 'none'");
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: h
+  });
+}
+
 /* ===== conteúdo ===== */
 
 async function lerConteudo(env) {
@@ -154,11 +212,26 @@ async function lerConteudo(env) {
 
 async function conteudoPublico(env) {
   const c = await lerConteudo(env);
+  const site = c.site && typeof c.site === 'object' ? c.site : {};
+  const secoesSalvas = Array.isArray(c.secoes) ? c.secoes : [];
   return json(
     {
-      site: c.site,
-      secoes: c.secoes.map(function (s) {
-        return { id: s.id, titulo: s.titulo, kits: s.kits.filter(function (k) { return k.ativo !== false; }) };
+      site: {
+        whatsapp: txt(site.whatsapp, 20) || SEMENTE.site.whatsapp,
+        freteTexto: txt(site.freteTexto, 200) || SEMENTE.site.freteTexto,
+        colecaoNome: txt(site.colecaoNome, 40) || SEMENTE.site.colecaoNome,
+        colecaoAno: txt(site.colecaoAno, 20) || SEMENTE.site.colecaoAno,
+        corCapa: corValida(site.corCapa) || SEMENTE.site.corCapa
+      },
+      secoes: SEMENTE.secoes.map(function (base) {
+        const salva = secoesSalvas.find(function (s) { return s && s.id === base.id; });
+        const kits = salva && Array.isArray(salva.kits) ? salva.kits : base.kits;
+        return {
+          id: base.id,
+          titulo: base.titulo,
+          kits: kits.slice(0, KITS_MAX).map(function (k) { return limparKit(k, base.id); })
+            .filter(function (k) { return k.ativo !== false; })
+        };
       })
     },
     200,
@@ -177,12 +250,13 @@ async function salvarConteudo(request, env) {
       whatsapp: txt(corpo.site.whatsapp, 20) || SEMENTE.site.whatsapp,
       freteTexto: txt(corpo.site.freteTexto, 200) || SEMENTE.site.freteTexto,
       colecaoNome: txt(corpo.site.colecaoNome, 40) || SEMENTE.site.colecaoNome,
-      colecaoAno: txt(corpo.site.colecaoAno, 20) || SEMENTE.site.colecaoAno
+      colecaoAno: txt(corpo.site.colecaoAno, 20) || SEMENTE.site.colecaoAno,
+      corCapa: corValida(corpo.site.corCapa) || SEMENTE.site.corCapa
     } : SEMENTE.site,
     secoes: SEMENTE.secoes.map(function (base) {
       const entrada = entradaPorId[base.id];
       const kits = entrada && Array.isArray(entrada.kits) ? entrada.kits : [];
-      return { id: base.id, titulo: base.titulo, kits: kits.slice(0, KITS_MAX).map(limparKit) };
+      return { id: base.id, titulo: base.titulo, kits: kits.slice(0, KITS_MAX).map(function (k) { return limparKit(k, base.id); }) };
     }),
     atualizadoEm: new Date().toISOString()
   };
@@ -193,7 +267,7 @@ async function salvarConteudo(request, env) {
 
 function txt(v, max) { return typeof v === 'string' ? v.trim().slice(0, max || 240) : ''; }
 function novoId() { return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
-function corValida(v) { return /^#[0-9a-f]{6}$/i.test(String(v || '')) ? v.toLowerCase() : ''; }
+function corValida(v) { return /^#[0-9a-f]{6}$/i.test(String(v || '')) ? String(v).toUpperCase() : ''; }
 
 function coresValidas(c) {
   if (!c || typeof c !== 'object') return undefined;
@@ -204,8 +278,11 @@ function coresValidas(c) {
   return Object.keys(out).length ? out : undefined;
 }
 
-function limparKit(k) {
+function limparKit(k, secaoId) {
   k = k || {};
+  const beneficiosPadrao = secaoId === 'kits2'
+    ? ['Bojo incluso', 'Zero transparência', 'Tecido Trilobal', 'Leve brilho']
+    : ['Bojo incluso', 'Bolso no short', 'Tecido Trilobal', 'Alta sustentação'];
   const kit = {
     id: txt(k.id, 40) || novoId(),
     ativo: k.ativo !== false,
@@ -217,7 +294,8 @@ function limparKit(k) {
     precoPix: txt(k.precoPix, 30),
     preco3x: txt(k.preco3x, 30),
     midias: (Array.isArray(k.midias) ? k.midias : []).slice(0, MIDIAS_MAX).map(limparMidia).filter(Boolean),
-    frases: (Array.isArray(k.frases) ? k.frases : []).slice(0, FRASES_MAX).map(function (f) { return txt(f, 60); }).filter(Boolean)
+    frases: (Array.isArray(k.frases) ? k.frases : []).slice(0, FRASES_MAX).map(function (f) { return txt(f, 60); }).filter(Boolean),
+    beneficios: (Array.isArray(k.beneficios) ? k.beneficios : beneficiosPadrao).slice(0, BENEFICIOS_MAX).map(function (b) { return txt(b, 50); }).filter(Boolean)
   };
   const cores = coresValidas(k.cores);
   if (cores) kit.cores = cores;
@@ -228,10 +306,17 @@ function limparMidia(m) {
   m = m || {};
   const tipo = m.tipo === 'video' ? 'video' : 'img';
   const src = txt(m.src, 200);
-  if (!src) return null;
+  if (!midiaSrcValida(src, tipo)) return null;
   const out = { tipo: tipo, src: src };
   if (tipo === 'video') out.comAudio = !!m.comAudio;
   return out;
+}
+
+function midiaSrcValida(src, tipo) {
+  if (/^\/api\/img\/[a-z0-9]{1,40}$/i.test(src)) return tipo === 'img';
+  if (/^\/api\/video\/[a-z0-9]{1,40}$/i.test(src)) return tipo === 'video';
+  if (src.indexOf('..') >= 0 || !/^midias\/[a-z0-9._/-]{1,180}$/i.test(src)) return false;
+  return tipo === 'video' ? /\.mp4$/i.test(src) : /\.(?:avif|jpe?g|png|webp)$/i.test(src);
 }
 
 /* ===== fotos (KV) ===== */
@@ -241,9 +326,11 @@ async function uploadImagem(request, env) {
   if (['image/jpeg', 'image/png', 'image/webp'].indexOf(ct) < 0) {
     return json({ erro: 'Formato não aceito. Use JPG, PNG ou WEBP.' }, 415);
   }
+  if (corpoMaiorQue(request, IMG_MAX)) return json({ erro: 'Imagem acima de 4 MB' }, 413);
   const bytes = await request.arrayBuffer();
   if (!bytes.byteLength) return json({ erro: 'Arquivo vazio' }, 400);
   if (bytes.byteLength > IMG_MAX) return json({ erro: 'Imagem acima de 4 MB' }, 413);
+  if (!assinaturaImagemValida(bytes, ct)) return json({ erro: 'O conteúdo do arquivo não corresponde a uma imagem válida.' }, 415);
   const id = novoId();
   await env.MQ.put('img:' + id, bytes, { metadata: { ct: ct, criadoEm: Date.now() } });
   return json({ id: id, url: '/api/img/' + id });
@@ -267,15 +354,35 @@ async function imagem(env, id) {
 
 async function uploadVideo(request, env) {
   const ct = (request.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
-  if (['video/mp4', 'video/quicktime', 'video/webm'].indexOf(ct) < 0) {
-    return json({ erro: 'Formato não aceito. Use MP4, MOV ou WEBM.' }, 415);
+  if (ct !== 'video/mp4') {
+    return json({ erro: 'Formato não aceito. Use MP4 para funcionar bem em celulares e computadores.' }, 415);
   }
+  if (corpoMaiorQue(request, VIDEO_MAX)) return json({ erro: 'Vídeo acima de 40 MB. Comprima ou encurte antes de subir.' }, 413);
   const bytes = await request.arrayBuffer();
   if (!bytes.byteLength) return json({ erro: 'Arquivo vazio' }, 400);
   if (bytes.byteLength > VIDEO_MAX) return json({ erro: 'Vídeo acima de 40 MB. Grave um clipe mais curto ou comprima antes de subir.' }, 413);
+  if (!assinaturaMp4Valida(bytes)) return json({ erro: 'O arquivo não parece ser um vídeo MP4 válido.' }, 415);
   const id = novoId();
   await env.MQMEDIA.put('vid:' + id, bytes, { httpMetadata: { contentType: ct } });
   return json({ id: id, url: '/api/video/' + id });
+}
+
+function corpoMaiorQue(request, max) {
+  const n = parseInt(request.headers.get('content-length') || '0', 10);
+  return Number.isFinite(n) && n > max;
+}
+
+function assinaturaImagemValida(buffer, ct) {
+  const b = new Uint8Array(buffer);
+  if (ct === 'image/jpeg') return b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+  if (ct === 'image/png') return b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47;
+  return b.length >= 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+    b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50;
+}
+
+function assinaturaMp4Valida(buffer) {
+  const b = new Uint8Array(buffer);
+  return b.length >= 12 && b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70;
 }
 
 async function video(request, env, id) {
@@ -288,12 +395,10 @@ async function video(request, env, id) {
     const head = await env.MQMEDIA.head(key);
     if (!head) return new Response('', { status: 404 });
     const size = head.size;
-    const m = /bytes=(\d*)-(\d*)/.exec(range) || [];
-    let inicio = m[1] ? parseInt(m[1], 10) : 0;
-    let fim = m[2] ? parseInt(m[2], 10) : size - 1;
-    if (isNaN(inicio) || inicio < 0) inicio = 0;
-    if (isNaN(fim) || fim > size - 1) fim = size - 1;
-    if (inicio > fim) return new Response('', { status: 416, headers: { 'content-range': 'bytes */' + size } });
+    const faixa = analisarRange(range, size);
+    if (!faixa) return new Response('', { status: 416, headers: { 'content-range': 'bytes */' + size } });
+    const inicio = faixa.inicio;
+    const fim = faixa.fim;
 
     const obj = await env.MQMEDIA.get(key, { range: { offset: inicio, length: fim - inicio + 1 } });
     if (!obj) return new Response('', { status: 404 });
@@ -308,6 +413,27 @@ async function video(request, env, id) {
   headers['content-type'] = (obj.httpMetadata && obj.httpMetadata.contentType) || 'video/mp4';
   headers['content-length'] = String(obj.size);
   return new Response(obj.body, { status: 200, headers: headers });
+}
+
+function analisarRange(valor, tamanho) {
+  if (!tamanho || valor.indexOf(',') >= 0) return null;
+  const m = /^bytes=(\d*)-(\d*)$/i.exec(valor.trim());
+  if (!m || (!m[1] && !m[2])) return null;
+  let inicio;
+  let fim;
+  if (!m[1]) {
+    const sufixo = parseInt(m[2], 10);
+    if (!sufixo || sufixo < 1) return null;
+    inicio = Math.max(tamanho - sufixo, 0);
+    fim = tamanho - 1;
+  } else {
+    inicio = parseInt(m[1], 10);
+    fim = m[2] ? parseInt(m[2], 10) : tamanho - 1;
+    if (!Number.isFinite(inicio) || inicio < 0 || inicio >= tamanho) return null;
+    if (!Number.isFinite(fim) || fim < inicio) return null;
+    fim = Math.min(fim, tamanho - 1);
+  }
+  return { inicio: inicio, fim: fim };
 }
 
 /* Apaga do KV/R2 a mídia que nenhum kit usa mais (kit excluído, foto/vídeo trocado).
@@ -353,7 +479,7 @@ async function limparMidiaOrfa(env, conteudo) {
 /* ===== sessão e senha ===== */
 
 async function login(request, env) {
-  if (!env.ADMIN_SENHA) return json({ erro: 'Senha do painel ainda não configurada no Cloudflare.' }, 503);
+  if (!env.ADMIN_SENHA || !env.ADMIN_SECRET) return json({ erro: 'Segredos do painel ainda não configurados no Cloudflare.' }, 503);
   if (!env.MQ) return json({ erro: 'Painel ainda não configurado (falta o KV no Cloudflare).' }, 503);
 
   const chaveIp = 'tent:' + (request.headers.get('cf-connecting-ip') || 'sem-ip');
@@ -363,7 +489,8 @@ async function login(request, env) {
   let corpo = {};
   try { corpo = await request.json(); } catch (e) {}
 
-  if (!(await conferirSenha(env, typeof corpo.senha === 'string' ? corpo.senha : ''))) {
+  const senha = typeof corpo.senha === 'string' ? corpo.senha : '';
+  if (senha.length > 128 || !(await conferirSenha(env, senha))) {
     await env.MQ.put(chaveIp, String(tentativas + 1), { expirationTtl: 600 });
     return json({ erro: 'Senha incorreta' }, 401);
   }
@@ -381,45 +508,73 @@ async function trocarSenha(request, env) {
   let corpo = {};
   try { corpo = await request.json(); } catch (e) {}
   const nova = typeof corpo.nova === 'string' ? corpo.nova : '';
-  if (nova.length < 8) return json({ erro: 'A senha nova precisa de 8 caracteres ou mais.' }, 400);
+  if (nova.length < 12) return json({ erro: 'A senha nova precisa de 12 caracteres ou mais.' }, 400);
+  if (nova.length > 128) return json({ erro: 'A senha nova precisa ter no máximo 128 caracteres.' }, 400);
   if (!(await conferirSenha(env, typeof corpo.atual === 'string' ? corpo.atual : ''))) {
     return json({ erro: 'A senha atual está errada.' }, 401);
   }
   const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
-  await env.MQ.put('senha', JSON.stringify({ salt: salt, iter: PBKDF2_ITER, hash: await derivar(nova, salt, PBKDF2_ITER) }));
-  return json({ ok: true });
+  await env.MQ.put('senha', JSON.stringify({
+    versao: 2,
+    algoritmo: 'hmac-sha256-pepper',
+    salt: salt,
+    hash: await assinar(env, 'senha-v2:' + salt + ':' + nova)
+  }));
+  await env.MQ.put('sessao:versao', crypto.randomUUID());
+  return json({ ok: true }, 200, { 'set-cookie': await cookieSessao(env) });
 }
 
 /* Senha do KV (trocada pelo painel) manda; sem ela, vale o secret ADMIN_SENHA. */
 async function conferirSenha(env, enviada) {
   const guardada = await env.MQ.get('senha', { type: 'json' });
-  if (guardada && guardada.hash) return (await derivar(enviada, guardada.salt, guardada.iter)) === guardada.hash;
+  if (guardada && guardada.versao === 2 && guardada.algoritmo === 'hmac-sha256-pepper' &&
+      /^[0-9a-f]{32}$/i.test(guardada.salt || '') && typeof guardada.hash === 'string') {
+    return igualSeguro(await assinar(env, 'senha-v2:' + guardada.salt + ':' + enviada), guardada.hash);
+  }
+  /* Compatibilidade temporária com senhas gravadas pela versão antiga. */
+  if (guardada && guardada.hash && /^[0-9a-f]{32}$/i.test(guardada.salt || '') &&
+      Number.isInteger(guardada.iter) && guardada.iter >= 50000 && guardada.iter <= 600000) {
+    return igualSeguro(await derivar(enviada, guardada.salt, guardada.iter), guardada.hash);
+  }
   const base = env.ADMIN_SENHA || '';
   if (!base) return false;
   const par = await Promise.all([assinar(env, 'c:' + enviada), assinar(env, 'c:' + base)]);
-  return par[0] === par[1];
+  return igualSeguro(par[0], par[1]);
 }
 
 async function cookieSessao(env) {
   const exp = Date.now() + SESSAO_DIAS * 86400000;
-  const token = exp + '.' + (await assinar(env, String(exp)));
+  const versao = (await env.MQ.get('sessao:versao')) || '1';
+  const base = exp + '.' + versao;
+  const token = base + '.' + (await assinar(env, base));
   return COOKIE + '=' + token + '; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=' + SESSAO_DIAS * 86400;
 }
 
 async function autorizado(request, env) {
-  if (!env.ADMIN_SENHA) return false;
+  if (!env.ADMIN_SENHA || !env.ADMIN_SECRET || !env.MQ) return false;
   const cookie = request.headers.get('cookie') || '';
   const achado = cookie.match(new RegExp('(?:^|;\\s*)' + COOKIE + '=([^;]+)'));
   if (!achado) return false;
   const partes = achado[1].split('.');
-  if (partes.length !== 2) return false;
+  if (partes.length !== 3) return false;
   const exp = parseInt(partes[0], 10);
   if (!exp || exp < Date.now()) return false;
-  return (await assinar(env, String(exp))) === partes[1];
+  const versao = (await env.MQ.get('sessao:versao')) || '1';
+  if (!igualSeguro(partes[1], versao)) return false;
+  return igualSeguro(await assinar(env, partes[0] + '.' + partes[1]), partes[2]);
+}
+
+function igualSeguro(a, b) {
+  a = String(a || '');
+  b = String(b || '');
+  let diferente = a.length ^ b.length;
+  const n = Math.max(a.length, b.length);
+  for (let i = 0; i < n; i++) diferente |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return diferente === 0;
 }
 
 async function assinar(env, dado) {
-  const bruto = new TextEncoder().encode(env.ADMIN_SECRET || env.ADMIN_SENHA || '');
+  const bruto = new TextEncoder().encode(env.ADMIN_SECRET || '');
   const chave = await crypto.subtle.importKey('raw', bruto, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return b64url(await crypto.subtle.sign('HMAC', chave, new TextEncoder().encode(dado)));
 }

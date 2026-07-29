@@ -3,7 +3,8 @@
     "whatsapp": "5511966050632",
     "freteTexto": "Frete grátis para todo o Brasil em pedidos acima de R$ 199",
     "colecaoNome": "Coleção",
-    "colecaoAno": "2026"
+    "colecaoAno": "2026",
+    "corCapa": "#1A1214"
   },
   "secoes": [
     {
@@ -28,6 +29,12 @@
           ],
           "precoPix": "R$ 179,90",
           "preco3x": "R$ 71,66",
+          "beneficios": [
+            "Bojo incluso",
+            "Bolso no short",
+            "Tecido Trilobal",
+            "Alta sustentação"
+          ],
           "midias": [
             {
               "tipo": "img",
@@ -78,6 +85,12 @@
           ],
           "precoPix": "R$ 179,90",
           "preco3x": "R$ 71,66",
+          "beneficios": [
+            "Bojo incluso",
+            "Bolso no short",
+            "Tecido Trilobal",
+            "Alta sustentação"
+          ],
           "midias": [
             {
               "tipo": "img",
@@ -121,6 +134,12 @@
           ],
           "precoPix": "R$ 179,90",
           "preco3x": "R$ 71,66",
+          "beneficios": [
+            "Bojo incluso",
+            "Bolso no short",
+            "Tecido Trilobal",
+            "Alta sustentação"
+          ],
           "midias": [
             {
               "tipo": "img",
@@ -171,6 +190,12 @@
           ],
           "precoPix": "R$ 199,00",
           "preco3x": "R$ 78,83",
+          "beneficios": [
+            "Bojo incluso",
+            "Zero transparência",
+            "Tecido Trilobal",
+            "Leve brilho"
+          ],
           "midias": [
             {
               "tipo": "img",
@@ -221,6 +246,12 @@
           ],
           "precoPix": "R$ 199,00",
           "preco3x": "R$ 78,83",
+          "beneficios": [
+            "Bojo incluso",
+            "Zero transparência",
+            "Tecido Trilobal",
+            "Leve brilho"
+          ],
           "midias": [
             {
               "tipo": "img",

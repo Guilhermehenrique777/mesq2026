@@ -1,99 +1,111 @@
 # Guia do painel — MESQ.
 
-Guia pra Cá mexer no site sozinha, sem depender de ninguém.
-
----
+Guia rápido para a Cá atualizar o catálogo pelo celular ou computador.
 
 ## Como entrar
 
-1. Abra **https://mesqfit.com.br/admin/** (pode salvar na tela de início do celular).
-2. Clique em **Sign in with GitHub**.
-3. Entre com a conta do GitHub. Só na primeira vez — depois o navegador lembra.
+1. Abra **https://mesqfit.com.br/admin/**.
+2. Digite a senha do painel.
+3. Se quiser, salve o endereço na tela inicial do celular.
 
-> Se aparecer "State inválido", é só clicar em entrar de novo.
+Não compartilhe a senha por mensagem aberta nem use a mesma senha de e-mail, Instagram ou banco. O painel não pede acesso ao GitHub.
 
----
+## Antes de editar
 
-## Como funciona
+O site tem três áreas no painel:
 
-O painel salva direto no site. Quando você clica em **Save**:
+- **Top + Short**
+- **Top + Legging**
+- **Capa**
 
-1. A alteração vai pro GitHub;
-2. O site se atualiza sozinho em **1 a 2 minutos**;
-3. Depois é só recarregar o site pra ver.
+As mudanças só aparecem no catálogo depois de tocar em **Publicar**. A atualização pode levar até cerca de 1 minuto para aparecer em todos os aparelhos.
 
-Não precisa avisar ninguém, não precisa fazer mais nada.
+## Editar um kit
 
----
+Abra a seção correta e toque no kit. Você pode alterar:
 
-## O que dá pra mudar
+- nome do botão e nome completo;
+- descrição;
+- benefícios, um por linha;
+- cor do kit;
+- tamanhos disponíveis;
+- preço no PIX;
+- valor de cada parcela em 3×;
+- frases do letreiro;
+- fotos e vídeos;
+- status ativo ou pausado.
 
-Tudo fica em **Catálogo → Kits, preços e fotos**.
+Use os botões de seta para reordenar os kits. Um kit pausado deixa de aparecer no catálogo sem ser apagado.
 
-### Trocar preço
+### Preços
 
-Cada kit tem dois campos:
+Preencha sempre no formato `R$ 179,90`.
 
-| Campo | O que é |
-|---|---|
-| **Preço no PIX** | O valor à vista. Ex.: `R$ 179,90` |
-| **Valor de CADA parcela no cartão (3×)** | O valor de **uma** parcela. Ex.: `R$ 71,66` |
+- **Preço no PIX:** valor total à vista.
+- **Cartão 3×:** valor de uma parcela, não o total.
 
-⚠️ **Atenção no campo do cartão.** É o valor de UMA parcela, não o total.
-O site multiplica por 3 sozinho. Se você colocar `R$ 71,66`, o cliente vê
-"3× de R$ 71,66" e total de R$ 214,98.
+Exemplo: `R$ 71,66` aparece no site como **3× de R$ 71,66 — total R$ 214,98**.
 
-Escreva sempre no formato `R$ 179,90` — com o `R$`, espaço, e vírgula nos centavos.
-Se errar o formato o painel avisa antes de salvar.
+## Fotos e vídeos
 
-### Trocar a cor do kit
+### Fotos
 
-O campo **Cor do kit** define o fundo da seção, a cor do botão e o letreiro —
-tudo de uma vez. Escolha a cor e salve.
+- Use JPG, PNG ou WebP.
+- O painel reduz e converte a foto automaticamente para WebP.
+- Prefira imagens verticais, claras e sem texto muito perto das bordas.
+- Confira o preview antes de publicar.
 
-Se quiser controlar um tom específico, abra **Ajuste fino de cores**. Se deixar
-vazio, o site calcula tudo a partir da cor principal.
+### Vídeos
 
-### Trocar fotos e vídeos
+- Use somente **MP4**.
+- Limite: **40 MB e 30 segundos** por vídeo.
+- Vídeos verticais funcionam melhor nos cards do catálogo.
+- Marque **vídeo com som** apenas quando o áudio for importante; o site começa mudo.
 
-Em **Fotos e vídeos** de cada kit:
+Use as setas para mudar a ordem. Só a mídia que está na frente da pilha reproduz vídeo, para não pesar no celular.
 
-- **+ Add** pra adicionar, a lixeira pra remover;
-- Arraste pra mudar a ordem (a ordem aqui é a ordem na pilha do site);
-- **Tipo**: Foto ou Vídeo;
-- **Arquivo**: clique e escolha do celular. Ele sobe sozinho.
-- **Vídeo com som**: marque só se o vídeo tem áudio que vale a pena — aí aparece
-  o botãozinho de som em cima do vídeo.
+## Benefícios e tamanhos
 
-**Antes de subir foto**, deixe ela com no máximo ~1000px de largura. Foto de
-celular crua tem 4 MB e deixa o site lento no 4G.
+Escreva um benefício por linha, com no máximo seis. Use frases curtas, por exemplo:
 
-### Adicionar um kit novo
+```text
+Bojo incluso
+Bolso no short
+Tecido trilobal
+Alta sustentação
+```
 
-Dentro da seção, em **Kits**, clique em **+ Add**. Preencha:
+Selecione pelo menos um tamanho antes de salvar.
 
-- **Identificador**: um apelido só com letras minúsculas, sem espaço nem acento
-  (ex.: `turquesa`). É interno, ninguém vê.
-- **Nome curto**: o que aparece no botão (ex.: `Turquesa`)
-- **Nome completo**: o título (ex.: `Kit Turquesa`)
-- Descrição, cor, preços, tamanhos, fotos e frases do letreiro.
+## Capa do site
 
-### Frases do letreiro
+Na aba **Capa**, é possível mudar:
 
-São as frases que giram em cima da foto. Uma por linha na lista.
-A primeira costuma ser `MESQ.`.
+- o nome da coleção;
+- o ano ou texto lateral;
+- a cor de fundo.
 
-### Trocar o WhatsApp que recebe os pedidos
+O preview mostra o resultado na hora. O painel escolhe automaticamente texto claro ou escuro para manter a leitura.
 
-Em **Ajustes gerais → WhatsApp**. Só números, com 55 e DDD:
-`5511966050632`.
+## Adicionar, pausar ou excluir um kit
 
----
+- **Novo kit:** cria um produto na seção aberta.
+- **Pausar:** tira o kit do site sem perder o cadastro.
+- **Excluir:** remove o cadastro após a confirmação.
 
-## Se algo der errado
+Antes de excluir, confirme se aquele kit não será usado novamente.
 
-Nada se perde — o GitHub guarda todas as versões. Fala com o Guilherme que
-ele volta pra versão anterior em um minuto.
+## Trocar a senha
 
-**Não mexa** no campo **Identificador** da *seção* (`kits` / `kits2`) — é o que
-liga a seção ao layout do site.
+Toque no ícone de chave. A nova senha precisa ter pelo menos 12 caracteres.
+
+Ao trocar a senha, os outros celulares e computadores conectados são desconectados. Guarde a nova senha em um gerenciador de senhas.
+
+## Se algo não aparecer
+
+1. Confirme se tocou em **Publicar**.
+2. Aguarde até 1 minuto.
+3. Atualize a página do catálogo.
+4. Se ainda não aparecer, não publique várias vezes seguidas: envie um print ao Guilherme.
+
+Evite fechar a tela durante o upload de uma foto ou vídeo.

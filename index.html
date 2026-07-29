@@ -143,6 +143,9 @@
       font-weight: 500;
       transition: color 0.2s;
       white-space: nowrap;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
     }
     .nav-links a:hover,
     .nav-links a.ativo { color: var(--text); }
@@ -163,6 +166,7 @@
       padding: 60px 24px;
       position: relative;
       overflow: hidden;
+      background: var(--hero-bg, var(--bg));
     }
     #hero::before {
       content: '';
@@ -212,25 +216,7 @@
       line-height: 1;
       margin-bottom: 32px;
       display: inline-block;
-      background: linear-gradient(
-        105deg,
-        var(--accent) 0%,
-        var(--accent) 35%,
-        rgba(242,232,224,0.85) 50%,
-        var(--accent) 65%,
-        var(--accent) 100%
-      );
-      background-size: 250% 100%;
-      background-position: 100% 0;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shimmerYear 6s ease-in-out infinite;
-    }
-    @keyframes shimmerYear {
-      0%   { background-position: 150% 0; }
-      40%  { background-position: -50% 0; }
-      100% { background-position: -50% 0; }
+      color: var(--accent);
     }
     .btn-primary {
       display: inline-flex;
@@ -392,7 +378,7 @@
       position: absolute;
       bottom: 12px; right: 10px;
       z-index: 20;
-      width: 32px; height: 32px;
+      width: 44px; height: 44px;
       border-radius: 50%;
       background: rgba(26,18,20,0.55);
       border: 1px solid rgba(242,232,224,0.2);
@@ -462,11 +448,15 @@
     }
     /* fade-up */
     .ca-fadeup {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .motion-ready .ca-fadeup {
       opacity: 0;
       transform: translateY(22px);
       transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
     }
-    .ca-fadeup.visible {
+    .motion-ready .ca-fadeup.visible {
       opacity: 1;
       transform: translateY(0);
     }
@@ -584,8 +574,8 @@
       top: 50%;
       transform: translateY(-50%);
       z-index: 20;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       border: 1px solid rgba(242,232,224,0.35);
       background: rgba(26,18,20,0.72);
@@ -623,8 +613,8 @@
       50%      { box-shadow: 0 0 0 4px rgba(122,16,48,0.35); }
     }
     .stack-zoom-btn {
-      width: 30px;
-      height: 30px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       border: 1px solid rgba(122,16,48,0.55);
       background: rgba(122,16,48,0.22);
@@ -652,8 +642,8 @@
       bottom: 12px;
       right: 12px;
       z-index: 10;
-      width: 34px;
-      height: 34px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       border: 1px solid rgba(242,232,224,0.30);
       background: rgba(26,18,20,0.65);
@@ -1327,6 +1317,15 @@
       position: relative;
     }
     .footer-gh-inline:hover { color: var(--accent-light); }
+    .footer-legal {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      margin-top: 8px;
+      color: var(--bege);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
     @keyframes neonGhPulse {
       0%, 85%, 100% { text-shadow: none; }
       88%  { text-shadow: 0 0 8px rgba(155,24,64,0.55), 0 0 20px rgba(155,24,64,0.25); }
@@ -1554,7 +1553,9 @@
       border: none;
       color: var(--text-muted);
       cursor: pointer;
-      padding: 4px;
+      padding: 10px;
+      min-width: 44px;
+      min-height: 44px;
       line-height: 1;
       font-size: 18px;
       transition: color 0.2s;
@@ -1641,6 +1642,15 @@
       transition: color 0.2s, border-color 0.2s;
     }
     .btn-sacola-continuar:hover { color: var(--text); border-color: rgba(242,232,224,0.3); }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .ca-fadeup, .motion-ready .ca-fadeup { opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body>
@@ -1699,7 +1709,7 @@
     <p class="kit-secao-titulo" id="kitsTitulo">Conjunto Top + Short</p>
 
     <div class="kit-stack-outer">
-      <div class="kit-letreiro" aria-live="polite">
+      <div class="kit-letreiro" aria-hidden="true">
         <p class="kit-letreiro-texto" id="kitLetreiro"></p>
       </div>
       <button class="stack-nav stack-nav-prev" id="stackPrev1" aria-label="Voltar">
@@ -1729,7 +1739,7 @@
     <div class="kit-info">
       <h2 class="kit-nome" id="kitNome"></h2>
       <p class="kit-desc" id="kitDesc"></p>
-      <div class="badges">
+      <div class="badges" id="kitBeneficios">
         <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Bojo incluso</span>
         <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Bolso no short</span>
         <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Tecido Trilobal</span>
@@ -1751,7 +1761,7 @@
   </button>
 
   <!-- ── DRAWER SACOLA ──────────────────────── -->
-  <div class="drawer" id="drawerSacola" role="dialog" aria-modal="true" aria-label="Sua sacola">
+  <div class="drawer" id="drawerSacola" role="dialog" aria-modal="true" aria-label="Sua sacola" aria-hidden="true">
     <div class="sacola-handle"></div>
     <p class="sacola-titulo">Sua sacola</p>
     <p class="sacola-subtitulo">Revise seus itens antes de solicitar</p>
@@ -1775,7 +1785,7 @@
 
   <!-- ── DRAWER PEDIDO ──────────────────────── -->
   <div class="drawer-overlay" id="drawerOverlay"></div>
-  <div class="drawer" id="drawerPedido" role="dialog" aria-modal="true">
+  <div class="drawer" id="drawerPedido" role="dialog" aria-modal="true" aria-label="Escolher tamanho, quantidade e pagamento" aria-hidden="true">
     <div class="drawer-handle"></div>
     <p class="drawer-titulo" id="drawerKitNome">Kit Esmeralda</p>
     <p class="drawer-subtitulo">Preencha as informações do pedido</p>
@@ -1830,7 +1840,7 @@
     <p class="kit-secao-titulo" id="kits2Titulo">Conjunto Top + Legging</p>
 
     <div class="kit-stack-outer">
-      <div class="kit-letreiro" id="kitLetreiro2wrap" aria-live="polite">
+      <div class="kit-letreiro" id="kitLetreiro2wrap" aria-hidden="true">
         <p class="kit-letreiro-texto" id="kitLetreiro2"></p>
       </div>
       <button class="stack-nav stack-nav-prev" id="stackPrev2" aria-label="Voltar">
@@ -1860,7 +1870,7 @@
     <div class="kit-info">
       <h2 class="kit-nome" id="kitNome2"></h2>
       <p class="kit-desc" id="kitDesc2"></p>
-      <div class="badges">
+      <div class="badges" id="kitBeneficios2">
         <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Bojo incluso</span>
         <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Zero transparência</span>
         <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Tecido Trilobal</span>
@@ -1876,7 +1886,7 @@
   </section>
 
   <!-- ── DRAWER PEDIDO 2 ───────────────────── -->
-  <div class="drawer" id="drawerPedido2" role="dialog" aria-modal="true">
+  <div class="drawer" id="drawerPedido2" role="dialog" aria-modal="true" aria-label="Escolher tamanho, quantidade e pagamento" aria-hidden="true">
     <div class="drawer-handle"></div>
     <p class="drawer-titulo" id="drawerKitNome2">Kit Rubi</p>
     <p class="drawer-subtitulo">Preencha as informações do pedido</p>
@@ -1936,7 +1946,8 @@
 
     <p class="footer-copy">
       <a href="https://wa.me/5511991601249?text=Ol%C3%A1%2C%20gostaria%20de%20or%C3%A7ar%20um%20cat%C3%A1logo%20interativo" target="_blank" rel="noopener" class="footer-gh-inline">CATÁLOGOS INTERATIVOS GH MARKETING</a><br>
-      © 2026 MESQ. · Todos os direitos reservados
+      © 2026 MESQ. · Todos os direitos reservados<br>
+      <a class="footer-legal" href="privacidade.html">Política de Privacidade</a>
     </p>
     </div><!-- /footer-conteudo -->
   </footer>
@@ -2006,6 +2017,35 @@
       }
     };
 
+    window.renderBeneficios = function(alvo, beneficios) {
+      if (!Array.isArray(beneficios)) return; /* conteúdo antigo no KV: mantém os diferenciais originais */
+      alvo.innerHTML = '';
+      (beneficios || []).slice(0, 6).forEach(function(texto) {
+        var badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+        badge.appendChild(document.createTextNode(texto));
+        alvo.appendChild(badge);
+      });
+    };
+
+    window.sincronizarVideosDaPilha = function(wrap) {
+      var cards = Array.from(wrap.querySelectorAll('.kit-card'));
+      cards.forEach(function(card, i) {
+        var video = card.querySelector('video');
+        if (!video) return;
+        var noTopo = i === cards.length - 1;
+        if (noTopo) video.play().catch(function(){});
+        else {
+          video.pause();
+          video.muted = true;
+          video.loop = true;
+          var botao = card.querySelector('.card-som-btn');
+          if (botao) botao.classList.remove('ativo');
+        }
+      });
+    };
+
     /* ── tabs geradas do JSON ── */
     window.montarTabs = function(wrap, kits, aoClicar) {
       wrap.innerHTML = '';
@@ -2014,6 +2054,7 @@
         b.className = 'kit-tab' + (i === 0 ? ' ativo' : '') + (k.pulso === false ? ' sem-pulso' : '');
         b.dataset.kit = k.id;
         b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
         b.textContent = k.rotulo || k.nome;
         /* cada tab mostra a cor do SEU kit, não a do kit ativo */
         b.style.setProperty('--tab-cor', (k.cores && k.cores.tab) || misturar(k.cor, 0, 0.45));
@@ -2061,15 +2102,34 @@
         if (s.tipo === 'placeholder') {
           card.innerHTML = '<div class="kit-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Foto em breve</span></div>';
         } else if (s.tipo === 'video') {
-          card.innerHTML = '<video src="' + s.src + '" autoplay loop playsinline muted preload="metadata"></video>';
+          var video = document.createElement('video');
+          video.src = s.src;
+          video.loop = true;
+          video.playsInline = true;
+          video.muted = true;
+          video.preload = 'metadata';
+          card.appendChild(video);
         } else {
-          card.innerHTML = '<img src="' + s.src + '" alt="' + dados.nome + '" loading="lazy" decoding="async">';
+          var img = document.createElement('img');
+          img.src = s.src;
+          img.alt = dados.nome + ' — foto ' + (i + 1);
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          card.appendChild(img);
         }
         wrap.appendChild(card);
         cards.push(card);
       });
+      if (!cards.length) {
+        var vazio = document.createElement('div');
+        vazio.className = 'kit-card';
+        vazio.innerHTML = '<div class="kit-placeholder"><span>Fotos em breve</span></div>';
+        wrap.appendChild(vazio);
+        cards.push(vazio);
+      }
 
       aplicarPosicoes(cards);
+      window.sincronizarVideosDaPilha(wrap);
 
       /* swipe removido — navegação exclusiva pelos botões */
 
@@ -2097,6 +2157,7 @@
     function virarCartaSec1() {
       var wrap = document.getElementById('kitStack');
       var arr = Array.from(wrap.querySelectorAll('.kit-card'));
+      if (arr.length < 2) return;
       var topo = arr[arr.length - 1];
       topo.style.transition = 'transform 0.35s cubic-bezier(0.4,0,0.6,1), opacity 0.28s ease';
       topo.style.transform = 'translateX(115%) rotate(12deg) scale(0.95)';
@@ -2109,6 +2170,7 @@
         setTimeout(function() {
           topo.style.transition = '';
           aplicarPosicoes(Array.from(wrap.querySelectorAll('.kit-card')));
+          window.sincronizarVideosDaPilha(wrap);
         }, 30);
       }, 360);
     }
@@ -2127,6 +2189,7 @@
         base.style.transition = 'transform 0.38s cubic-bezier(0.22,1,0.36,1), opacity 0.28s ease';
         base.style.opacity = '1';
         aplicarPosicoes(Array.from(wrap.querySelectorAll('.kit-card')));
+        window.sincronizarVideosDaPilha(wrap);
       }, 20);
     }
 
@@ -2134,35 +2197,54 @@
     window.abrirZoom = function abrirZoom(src, isVideo) {
       /* um zoom por vez — evita overlays empilhados */
       if (document.getElementById('zoomOverlay')) return;
+      var focoAnterior = document.activeElement;
       var overlay = document.createElement('div');
       overlay.id = 'zoomOverlay';
-      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'Visualização ampliada');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:flex;align-items:center;justify-content:center;';
       var el;
       if (isVideo) {
         el = document.createElement('video');
-        el.src = src; el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true;
+        el.src = src; el.autoplay = true; el.loop = true; el.muted = true; el.playsInline = true; el.controls = true;
         el.style.cssText = 'max-width:96vw;max-height:90vh;border-radius:12px;';
       } else {
         el = document.createElement('img');
         el.src = src;
+        el.alt = 'Foto ampliada do produto';
         el.style.cssText = 'max-width:96vw;max-height:90vh;border-radius:12px;object-fit:contain;';
       }
+      var fechar = document.createElement('button');
+      fechar.type = 'button';
+      fechar.setAttribute('aria-label', 'Fechar visualização');
+      fechar.textContent = '×';
+      fechar.style.cssText = 'position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:#1A1214;color:#F2E8E0;font-size:26px;cursor:pointer;';
       overlay.appendChild(el);
-      overlay.addEventListener('click', function() {
+      overlay.appendChild(fechar);
+      function encerrar() {
         overlay.remove();
         document.body.classList.remove('zoom-aberto');
         window.sincronizarScrollLock();
-      });
+        document.removeEventListener('keydown', aoTeclado);
+        if (focoAnterior && focoAnterior.focus) focoAnterior.focus();
+      }
+      function aoTeclado(e) { if (e.key === 'Escape') encerrar(); }
+      fechar.addEventListener('click', encerrar);
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) encerrar(); });
+      document.addEventListener('keydown', aoTeclado);
       document.body.appendChild(overlay);
       document.body.classList.add('zoom-aberto');
       window.sincronizarScrollLock();
+      fechar.focus();
     }
 
     function iniciarLetreiro(kit) {
       clearInterval(letreirTimer);
-      var frases = KITS[kit].frases;
+      var frases = KITS[kit].frases || [];
       letreirIdx = 0;
       var el = document.getElementById('kitLetreiro');
+      if (!frases.length) { el.textContent = 'MESQ.'; el.classList.add('show'); return; }
       function mostrar() {
         el.classList.remove('show');
         setTimeout(function(){
@@ -2181,10 +2263,12 @@
       document.getElementById('kitNome').textContent       = dados.nome;
       document.getElementById('kitDesc').textContent       = dados.desc;
       document.getElementById('kitTamanhos').textContent   = dados.tamanhos.join(' · ');
+      window.renderBeneficios(document.getElementById('kitBeneficios'), dados.beneficios);
       document.getElementById('drawerKitNome').textContent = dados.nome;
       /* preços na vitrine */
       document.getElementById('kitPrecoPix').textContent = dados.precoPix;
-      document.getElementById('kitPreco3x').textContent  = 'ou 3× de ' + dados.preco3x;
+      document.getElementById('kitPreco3x').textContent  = 'ou 3× de ' + dados.preco3x +
+        ' · total ' + window.numParaMoeda(window.moedaParaNum(dados.preco3x) * 3);
       /* preços no drawer */
       document.getElementById('drawerPrecoPix').textContent = dados.precoPix;
       document.getElementById('drawerPreco3x').textContent  = dados.preco3x;
@@ -2209,6 +2293,7 @@
       /* escopo #kits: sem isso os tabs da seção 2 perdiam o 'ativo' */
       document.querySelectorAll('#kits .kit-tab').forEach(function(t){
         t.classList.toggle('ativo', t.dataset.kit === kit);
+        t.setAttribute('aria-selected', t.dataset.kit === kit ? 'true' : 'false');
       });
       /* fundo e cores do kit vêm do painel */
       window.aplicarCoresKit(document.getElementById('kits'), dados, document.getElementById('drawerPedido'));
@@ -2258,13 +2343,27 @@
         var valor = isPix ? item.pixBase * item.qtd : item.parcelaBase * item.qtd * 3;
         var div = document.createElement('div');
         div.className = 'sacola-item';
-        div.innerHTML =
-          '<div class="sacola-item-info">' +
-            '<p class="sacola-item-nome">' + item.nome + '</p>' +
-            '<p class="sacola-item-detalhe">Tam. ' + item.tamanho + ' · Qtd. ' + item.qtd + ' · ' + item.pagamento + '</p>' +
-          '</div>' +
-          '<span class="sacola-item-valor">' + window.numParaMoeda(valor) + '</span>' +
-          '<button class="sacola-item-remover" data-idx="' + idx + '" aria-label="Remover">×</button>';
+        var info = document.createElement('div');
+        info.className = 'sacola-item-info';
+        var nome = document.createElement('p');
+        nome.className = 'sacola-item-nome';
+        nome.textContent = item.nome;
+        var detalhe = document.createElement('p');
+        detalhe.className = 'sacola-item-detalhe';
+        detalhe.textContent = 'Tam. ' + item.tamanho + ' · Qtd. ' + item.qtd + ' · ' + item.pagamento;
+        info.appendChild(nome);
+        info.appendChild(detalhe);
+        var preco = document.createElement('span');
+        preco.className = 'sacola-item-valor';
+        preco.textContent = window.numParaMoeda(valor);
+        var remover = document.createElement('button');
+        remover.className = 'sacola-item-remover';
+        remover.dataset.idx = idx;
+        remover.setAttribute('aria-label', 'Remover ' + item.nome);
+        remover.textContent = '×';
+        div.appendChild(info);
+        div.appendChild(preco);
+        div.appendChild(remover);
         lista.appendChild(div);
       });
 
@@ -2300,11 +2399,14 @@
       renderizarSacola();
       overlay.classList.add('open');
       drawerSacola.classList.add('open');
+      drawerSacola.setAttribute('aria-hidden','false');
       window.sincronizarScrollLock();
+      document.getElementById('btnSacolaWpp').focus();
     }
     function fecharDrawerSacola() {
       overlay.classList.remove('open');
       drawerSacola.classList.remove('open');
+      drawerSacola.setAttribute('aria-hidden','true');
       window.sincronizarScrollLock();
     }
 
@@ -2354,12 +2456,20 @@
       document.querySelectorAll('#drawerPagamento .drawer-pag-opcao').forEach(function(b){ b.classList.remove('sel'); });
       aplicarCorDrawer(kitAtivo);
       atualizarPrecos();
-      overlay.classList.add('open'); drawer.classList.add('open'); window.sincronizarScrollLock();
+      overlay.classList.add('open'); drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false'); window.sincronizarScrollLock();
+      var primeiraOpcao=drawer.querySelector('.drawer-opcao'); if(primeiraOpcao) primeiraOpcao.focus();
     }
-    function fecharDrawer(){ overlay.classList.remove('open'); drawer.classList.remove('open'); window.sincronizarScrollLock(); }
+    function fecharDrawer(){
+      overlay.classList.remove('open'); drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); window.sincronizarScrollLock();
+    }
 
     document.getElementById('btnCarrinho').addEventListener('click', abrirDrawer);
     document.getElementById('btnContinuar').addEventListener('click', fecharDrawer);
+    document.addEventListener('keydown',function(e){
+      if(e.key!=='Escape') return;
+      if(drawer.classList.contains('open')){fecharDrawer();document.getElementById('btnCarrinho').focus();}
+      if(drawerSacola.classList.contains('open')){fecharDrawerSacola();sacolaBtn.focus();}
+    });
 
     /* pagamento com preço — event delegation */
     document.getElementById('drawerPagamento').addEventListener('click', function(e) {
@@ -2455,7 +2565,7 @@
       wrap.innerHTML = '';
       var dados = KITS2[kit];
       var cards = [];
-      dados.midias.forEach(function(s) {
+      dados.midias.forEach(function(s, indice) {
         var card = document.createElement('div');
         card.className = 'kit-card';
         if (s.tipo === 'placeholder') {
@@ -2463,8 +2573,13 @@
         } else if (s.tipo === 'video') {
           /* Todos os vídeos: começam mudos em autoplay loop.
              Vídeos com som (comAudio:true): cliente toca/muta; ao terminar 1ª vez volta mudo em loop. */
-          card.innerHTML = '<video src="'+s.src+'" autoplay loop muted playsinline preload="metadata"></video>';
-          var vid = card.querySelector('video');
+          var vid = document.createElement('video');
+          vid.src = s.src;
+          vid.loop = true;
+          vid.muted = true;
+          vid.playsInline = true;
+          vid.preload = 'metadata';
+          card.appendChild(vid);
           if (s.comAudio) {
             /* botão som sobre o card */
             var btnSom = document.createElement('button');
@@ -2473,10 +2588,9 @@
             btnSom.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15" class="icon-mute-x"/><line x1="17" y1="9" x2="23" y2="15" class="icon-mute-x"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" class="icon-vol-wave"/></svg>';
             card.style.position = 'relative';
             card.appendChild(btnSom);
-            var somAtivo = false;
             btnSom.addEventListener('click', function(e) {
               e.stopPropagation();
-              somAtivo = !somAtivo;
+              var somAtivo = !btnSom.classList.contains('ativo');
               if (somAtivo) {
                 vid.muted = false;
                 vid.loop = false;
@@ -2484,7 +2598,6 @@
                 vid.addEventListener('ended', function onEnd() {
                   vid.muted = true;
                   vid.loop = true;
-                  somAtivo = false;
                   btnSom.classList.remove('ativo');
                   vid.play().catch(function(){});
                   vid.removeEventListener('ended', onEnd);
@@ -2497,12 +2610,25 @@
             });
           }
         } else {
-          card.innerHTML = '<img src="'+s.src+'" alt="'+dados.nome+'" loading="lazy" decoding="async">';
+          var img = document.createElement('img');
+          img.src = s.src;
+          img.alt = dados.nome + ' — foto ' + (indice + 1);
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          card.appendChild(img);
         }
         wrap.appendChild(card);
         cards.push(card);
       });
+      if (!cards.length) {
+        var vazio = document.createElement('div');
+        vazio.className = 'kit-card';
+        vazio.innerHTML = '<div class="kit-placeholder"><span>Fotos em breve</span></div>';
+        wrap.appendChild(vazio);
+        cards.push(vazio);
+      }
       aplicarPosicoes2(cards);
+      window.sincronizarVideosDaPilha(wrap);
       /* swipe removido — navegação exclusiva pelos botões */
 
       /* ── duplo toque zoom sec2 — registra uma vez só (ver seção 1) ── */
@@ -2526,6 +2652,7 @@
 
     function virarCartaSec2(wrap) {
       var arr = Array.from(wrap.querySelectorAll('.kit-card'));
+      if (arr.length < 2) return;
       var topo = arr[arr.length - 1];
       topo.style.transition = 'transform 0.35s cubic-bezier(0.4,0,0.6,1), opacity 0.28s ease';
       topo.style.transform  = 'translateX(115%) rotate(12deg) scale(0.95)';
@@ -2539,6 +2666,7 @@
           topo.style.transition = 'transform 0.4s cubic-bezier(0.2,0,0.3,1), opacity 0.3s ease';
           aplicarPosicoes2(Array.from(wrap.querySelectorAll('.kit-card')));
           topo.style.opacity = '1';
+          window.sincronizarVideosDaPilha(wrap);
         }, 30);
       }, 360);
     }
@@ -2555,14 +2683,16 @@
         base.style.transition = 'transform 0.38s cubic-bezier(0.22,1,0.36,1), opacity 0.28s ease';
         base.style.opacity = '1';
         aplicarPosicoes2(Array.from(wrap.querySelectorAll('.kit-card')));
+        window.sincronizarVideosDaPilha(wrap);
       }, 20);
     }
 
     function iniciarLetreiro2(kit) {
       clearInterval(letreirTimer2);
-      var frases = KITS2[kit].frases;
+      var frases = KITS2[kit].frases || [];
       letreirIdx2 = 0;
       var el = document.getElementById('kitLetreiro2');
+      if (!frases.length) { el.textContent = 'MESQ.'; el.classList.add('show'); return; }
       function mostrar() {
         el.classList.remove('show');
         setTimeout(function(){
@@ -2581,8 +2711,10 @@
       document.getElementById('kitNome2').textContent     = dados.nome;
       document.getElementById('kitDesc2').textContent     = dados.desc;
       document.getElementById('kitTamanhos2').textContent = dados.tamanhos.join(' · ');
+      window.renderBeneficios(document.getElementById('kitBeneficios2'), dados.beneficios);
       document.getElementById('kitPrecoPix2').textContent = dados.precoPix;
-      document.getElementById('kitPreco3x2').textContent  = 'ou 3× de ' + dados.preco3x;
+      document.getElementById('kitPreco3x2').textContent  = 'ou 3× de ' + dados.preco3x +
+        ' · total ' + window.numParaMoeda(window.moedaParaNum(dados.preco3x) * 3);
       document.getElementById('drawerKitNome2').textContent = dados.nome;
       document.getElementById('drawerPrecoPix2').textContent = dados.precoPix;
       document.getElementById('drawerPreco3x2').textContent  = dados.preco3x;
@@ -2608,6 +2740,7 @@
       /* tabs */
       document.querySelectorAll('#kits2 .kit-tab').forEach(function(t){
         t.classList.toggle('ativo', t.dataset.kit === kit);
+        t.setAttribute('aria-selected', t.dataset.kit === kit ? 'true' : 'false');
       });
       /* fundo, letreiro e drawer — cores do painel */
       window.aplicarCoresKit(document.getElementById('kits2'), dados, document.getElementById('drawerPedido2'));
@@ -2634,17 +2767,25 @@
       var overlay = document.getElementById('drawerOverlay');
       overlay.classList.add('open');
       document.getElementById('drawerPedido2').classList.add('open');
+      document.getElementById('drawerPedido2').setAttribute('aria-hidden','false');
       window.sincronizarScrollLock();
+      var primeiraOpcao=document.querySelector('#drawerTamanhos2 .drawer-opcao'); if(primeiraOpcao) primeiraOpcao.focus();
     }
     function fecharDrawer2() {
       var overlay = document.getElementById('drawerOverlay');
       overlay.classList.remove('open');
       document.getElementById('drawerPedido2').classList.remove('open');
+      document.getElementById('drawerPedido2').setAttribute('aria-hidden','true');
       window.sincronizarScrollLock();
     }
 
     document.getElementById('btnCarrinho2').addEventListener('click', abrirDrawer2);
     document.getElementById('btnContinuar2').addEventListener('click', fecharDrawer2);
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape' && document.getElementById('drawerPedido2').classList.contains('open')){
+        fecharDrawer2(); document.getElementById('btnCarrinho2').focus();
+      }
+    });
 
     document.getElementById('drawerPagamento2').addEventListener('click', function(e) {
       var btn = e.target.closest('.drawer-pag-opcao');
@@ -2703,6 +2844,8 @@
   <script>
     (function(){
       var items = document.querySelectorAll('.ca-fadeup');
+      if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      document.documentElement.classList.add('motion-ready');
       var delays = [0, 120, 240, 360, 480, 600];
       var obs = new IntersectionObserver(function(entries){
         entries.forEach(function(entry){
@@ -2714,6 +2857,7 @@
         });
       }, {threshold:0.1});
       items.forEach(function(el){ obs.observe(el); });
+      setTimeout(function(){ items.forEach(function(el){ el.classList.add('visible'); }); }, 2200);
     })();
   </script>
 
@@ -2732,11 +2876,35 @@
         var site   = dados.site   || {};
         if (site.colecaoNome) document.getElementById('heroColecaoNome').textContent = site.colecaoNome;
         if (site.colecaoAno)  document.getElementById('heroColecaoAno').textContent  = site.colecaoAno;
+        if (/^#[0-9a-f]{6}$/i.test(site.corCapa || '')) {
+          var hero = document.getElementById('hero');
+          var cor = site.corCapa;
+          var rgb = [1,3,5].map(function(i){ return parseInt(cor.slice(i,i+2),16)/255; });
+          var lum = rgb.map(function(v){ return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4); })
+            .reduce(function(s,v,i){ return s+v*[.2126,.7152,.0722][i]; },0);
+          hero.style.setProperty('--hero-bg', cor);
+          hero.style.setProperty('--text', lum>.42 ? '#1A1214' : '#F2E8E0');
+          hero.style.setProperty('--text-muted', lum>.42 ? 'rgba(26,18,20,.72)' : 'rgba(242,232,224,.62)');
+          hero.style.setProperty('--accent', lum>.42 ? '#7A1030' : '#D98FA8');
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', cor);
+        }
         var s1 = secoes.find(function(s){ return s.id === 'kits'; })  || secoes[0];
         var s2 = secoes.find(function(s){ return s.id === 'kits2'; }) || secoes[1];
         /* seção 1 primeiro: ela cria a sacola e os helpers usados pela 2 */
-        if (s1 && s1.kits && s1.kits.length) window.__initSec1(s1, site);
-        if (s2 && s2.kits && s2.kits.length) window.__initSec2(s2, site);
+        var temS1 = !!(s1 && s1.kits && s1.kits.length);
+        var temS2 = !!(s2 && s2.kits && s2.kits.length);
+        if (temS1) window.__initSec1(s1, site);
+        else {
+          document.getElementById('kits').hidden = true;
+          /* Inicializa os helpers/sacola com a seção 2, sem exibir conteúdo duplicado. */
+          if (temS2) window.__initSec1(s2, site);
+        }
+        if (temS2) window.__initSec2(s2, site);
+        else {
+          document.getElementById('kits2').hidden = true;
+          var divisor = document.querySelector('#kits2').previousElementSibling;
+          if (divisor && divisor.classList.contains('secao-divisor')) divisor.hidden = true;
+        }
       })
       .catch(function(e){
         console.error('Falha ao carregar /api/conteudo:', e);

@@ -131,6 +131,10 @@
   .chip.on{background:var(--grad);border-color:transparent;color:#fff}
   .corcampo{display:flex;gap:10px;align-items:center}
   .corcampo input[type=text]{flex:1}
+  .capa-preview{min-height:150px;border-radius:14px;display:grid;place-items:center;text-align:center;padding:22px;
+    margin-bottom:14px;border:1.6px solid var(--line);transition:background .2s,color .2s}
+  .capa-preview strong{display:block;font-family:var(--display);font-size:30px;line-height:1.05}
+  .capa-preview span{display:block;margin-top:7px;font-size:12px;text-transform:uppercase;letter-spacing:2px}
   .dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .dica{font-size:11.5px;color:var(--muted);margin:-8px 0 14px;line-height:1.4}
 
@@ -145,7 +149,7 @@
   .midia .mi .t{font-size:12px;font-weight:700}
   .midia .mi label{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
   .midia .mord{display:flex;gap:4px;flex:none}
-  .midiamini{width:34px;height:34px;border-radius:9px;border:1.6px solid var(--line);background:var(--card);color:var(--ink);
+  .midiamini{width:44px;height:44px;border-radius:9px;border:1.6px solid var(--line);background:var(--card);color:var(--ink);
     font-size:13px;display:grid;place-items:center}
   .midiamini:disabled{opacity:.3}
   .midiamini.x{color:#e2455b;border-color:rgba(226,69,91,.45)}
@@ -237,10 +241,10 @@
       <label class="campo"><span>Senha de agora</span>
         <input type="password" id="senhaAtual" autocomplete="current-password"></label>
       <label class="campo"><span>Senha nova</span>
-        <input type="password" id="senhaNova" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"></label>
+        <input type="password" id="senhaNova" autocomplete="new-password" placeholder="Pelo menos 12 caracteres"></label>
       <label class="campo"><span>Repita a senha nova</span>
         <input type="password" id="senhaNova2" autocomplete="new-password"></label>
-      <p class="dica">Quem já estiver logado em outro aparelho continua dentro. Pra derrubar todo mundo, fale com o Guilherme.</p>
+      <p class="dica">Ao trocar, os outros aparelhos conectados saem do painel automaticamente.</p>
       <div style="display:grid;gap:9px">
         <button class="btn pri full" id="btnTrocarSenha" type="submit">Trocar senha</button>
         <button class="btn sec full" id="senhaCancelar" type="button">Cancelar</button>
@@ -276,7 +280,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -301,6 +305,22 @@ $('btnTema').addEventListener('click',function(){
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function novoId(){return Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);}
+function corValida(c){return /^#[0-9a-f]{6}$/i.test(String(c||''));}
+function urlMidia(src){
+  try{
+    var u=new URL(String(src||''),location.origin+'/');
+    if(u.origin!==location.origin) return '';
+    if(!/^\/(?:api\/(?:img|video)\/[a-z0-9]+|midias\/[a-z0-9._/-]+)$/i.test(u.pathname)) return '';
+    return u.href;
+  }catch(e){return '';}
+}
+function textoCapa(cor){
+  if(!corValida(cor)) return '#F2E8E0';
+  var rgb=[1,3,5].map(function(i){return parseInt(cor.slice(i,i+2),16)/255;});
+  var lum=rgb.map(function(v){return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);})
+    .reduce(function(s,v,i){return s+v*[.2126,.7152,.0722][i];},0);
+  return lum>.42 ? '#1A1214' : '#F2E8E0';
+}
 var tempoToast=null;
 function toast(msg){
   var t=$('toast'); t.textContent=msg; t.classList.add('on');
@@ -311,8 +331,9 @@ function mostrarErro(el,msg){
 }
 function api(url,opcoes){
   opcoes=opcoes||{};
-  return fetch(url,Object.assign({credentials:'same-origin'},opcoes)).then(function(r){
+  return fetch(url,Object.assign({credentials:'same-origin',cache:'no-store'},opcoes)).then(function(r){
     return r.json().catch(function(){return {};}).then(function(d){
+      if(r.status===401){ setTimeout(function(){location.reload();},500); }
       if(!r.ok) throw new Error(d.erro||('Falha na conexão ('+r.status+')'));
       return d;
     });
@@ -320,7 +341,7 @@ function api(url,opcoes){
 }
 function capaKit(k){
   var m=(k.midias||[]).find(function(x){return x.tipo==='img';});
-  return m ? m.src : '';
+  return m ? urlMidia(m.src) : '';
 }
 
 /* ===== login ===== */
@@ -376,7 +397,7 @@ function marcarSujo(){
 }
 function marcarLimpo(){
   sujo=false; $('btnPublicar').disabled=true;
-  $('status').textContent='Tudo publicado. O site está igual ao que você vê aqui.';
+  $('status').textContent='Tudo publicado. A atualização pode levar até 1 minuto para aparecer em todos os lugares.';
 }
 window.addEventListener('beforeunload',function(e){ if(sujo){e.preventDefault();e.returnValue='';} });
 
@@ -423,16 +444,39 @@ function render(){
 
 function renderCapa(){
   $('conta').textContent='';
+  var cor=corValida(estado.site.corCapa)?estado.site.corCapa:'#1A1214';
   $('lista').innerHTML=
+    '<div class="capa-preview" id="capaPreview" style="background:'+esc(cor)+';color:'+textoCapa(cor)+'">'+
+      '<div><strong id="capaPreviewNome">'+esc(estado.site.colecaoNome||'Coleção')+'</strong>'+
+      '<span id="capaPreviewAno">'+esc(estado.site.colecaoAno||'2026')+'</span></div></div>'+
     '<div class="item"><div class="corpo" style="display:block;width:100%">'+
       '<label class="campo"><span>Nome da coleção</span>'+
-        '<input type="text" id="capaNome" value="'+esc(estado.site.colecaoNome||'')+'" placeholder="Coleção"></label>'+
-      '<label class="campo" style="margin-bottom:0"><span>Ano (ou texto do lado)</span>'+
-        '<input type="text" id="capaAno" value="'+esc(estado.site.colecaoAno||'')+'" placeholder="2026"></label>'+
+        '<input type="text" id="capaNome" maxlength="40" value="'+esc(estado.site.colecaoNome||'')+'" placeholder="Coleção"></label>'+
+      '<label class="campo"><span>Ano (ou texto do lado)</span>'+
+        '<input type="text" id="capaAno" maxlength="20" value="'+esc(estado.site.colecaoAno||'')+'" placeholder="2026"></label>'+
+      '<label class="campo" style="margin-bottom:0"><span>Cor de fundo da capa</span>'+
+        '<div class="corcampo"><input type="color" id="capaCorPicker" value="'+esc(cor)+'" aria-label="Escolher cor da capa">'+
+        '<input type="text" id="capaCorTexto" value="'+esc(cor)+'" maxlength="7" placeholder="#1A1214"></div></label>'+
     '</div></div>'+
-    '<p class="dica">É o texto grande na primeira tela do site, embaixo do logo MESQ. Ex.: "Coleção" + "2026".</p>';
-  $('capaNome').addEventListener('input',function(e){ estado.site.colecaoNome=e.target.value; marcarSujo(); });
-  $('capaAno').addEventListener('input',function(e){ estado.site.colecaoAno=e.target.value; marcarSujo(); });
+    '<p class="dica">É a primeira tela do site. O painel escolhe automaticamente texto claro ou escuro para manter a leitura.</p>';
+  function atualizarPreview(){
+    var atual=corValida(estado.site.corCapa)?estado.site.corCapa:'#1A1214';
+    $('capaPreview').style.background=atual;
+    $('capaPreview').style.color=textoCapa(atual);
+    $('capaPreviewNome').textContent=estado.site.colecaoNome||'Coleção';
+    $('capaPreviewAno').textContent=estado.site.colecaoAno||'2026';
+  }
+  $('capaNome').addEventListener('input',function(e){ estado.site.colecaoNome=e.target.value; atualizarPreview(); marcarSujo(); });
+  $('capaAno').addEventListener('input',function(e){ estado.site.colecaoAno=e.target.value; atualizarPreview(); marcarSujo(); });
+  $('capaCorPicker').addEventListener('input',function(e){
+    estado.site.corCapa=e.target.value.toUpperCase(); $('capaCorTexto').value=estado.site.corCapa;
+    atualizarPreview(); marcarSujo();
+  });
+  $('capaCorTexto').addEventListener('input',function(e){
+    if(!corValida(e.target.value)) return;
+    estado.site.corCapa=e.target.value.toUpperCase(); $('capaCorPicker').value=estado.site.corCapa;
+    atualizarPreview(); marcarSujo();
+  });
 }
 
 $('lista').addEventListener('click',function(e){
@@ -465,8 +509,13 @@ var TAMANHOS_POSSIVEIS=['P','M','G'];
 function abrirEditor(i){
   var novo = i===null;
   var base = novo
-    ? {id:novoId(),ativo:true,rotulo:'',nome:'',desc:'',cor:'#7A1030',tamanhos:['P','M','G'],precoPix:'',preco3x:'',midias:[],frases:[]}
+    ? {id:novoId(),ativo:true,rotulo:'',nome:'',desc:'',cor:'#7A1030',tamanhos:['P','M','G'],precoPix:'',preco3x:'',midias:[],frases:[],beneficios:[]}
     : JSON.parse(JSON.stringify(lista()[i]));
+  if(!Array.isArray(base.beneficios)){
+    base.beneficios = aba==='kits'
+      ? ['Bojo incluso','Bolso no short','Tecido Trilobal','Alta sustentação']
+      : ['Bojo incluso','Zero transparência','Tecido Trilobal','Leve brilho'];
+  }
   editando=i; rascunho=base;
   $('editorTitulo').textContent = novo ? 'Novo kit' : 'Editar kit';
   mostrarErro('erroEditor','');
@@ -484,12 +533,12 @@ function fecharEditor(){
 function desenharForm(){
   var html='';
   html+='<label class="campo"><span>Nome do kit</span>'+
-    '<input type="text" data-k="nome" value="'+esc(rascunho.nome)+'" placeholder="Ex.: Kit Esmeralda"></label>';
+    '<input type="text" data-k="nome" maxlength="80" value="'+esc(rascunho.nome)+'" placeholder="Ex.: Kit Esmeralda"></label>';
   html+='<label class="campo"><span>Rótulo da aba</span>'+
-    '<input type="text" data-k="rotulo" value="'+esc(rascunho.rotulo)+'" placeholder="Ex.: Esmeralda"></label>'+
+    '<input type="text" data-k="rotulo" maxlength="40" value="'+esc(rascunho.rotulo)+'" placeholder="Ex.: Esmeralda"></label>'+
     '<p class="dica">Nome curto que aparece no botão de cada kit no site.</p>';
   html+='<label class="campo"><span>Descrição</span>'+
-    '<textarea rows="3" data-k="desc" placeholder="Duas ou três frases sobre o kit.">'+esc(rascunho.desc)+'</textarea></label>';
+    '<textarea rows="3" data-k="desc" maxlength="500" placeholder="Duas ou três frases sobre o kit.">'+esc(rascunho.desc)+'</textarea></label>';
   html+='<label class="campo"><span>Cor do kit</span>'+
     '<div class="corcampo"><input type="color" id="corPicker" value="'+esc(rascunho.cor)+'">'+
     '<input type="text" id="corTexto" value="'+esc(rascunho.cor)+'" placeholder="#7A1030"></div></label>'+
@@ -506,6 +555,9 @@ function desenharForm(){
   html+='<label class="campo"><span>Frases do letreiro</span>'+
     '<textarea rows="4" id="frasesTexto" placeholder="Uma frase por linha">'+esc((rascunho.frases||[]).join('\n'))+'</textarea></label>'+
     '<p class="dica">Frases curtas que alternam embaixo das fotos, uma por linha.</p>';
+  html+='<label class="campo"><span>Diferenciais do kit</span>'+
+    '<textarea rows="4" id="beneficiosTexto" placeholder="Um diferencial por linha">'+esc((rascunho.beneficios||[]).join('\n'))+'</textarea></label>'+
+    '<p class="dica">Ex.: Bojo incluso, zero transparência, bolso no short. Cadastre apenas o que este kit realmente oferece.</p>';
   html+='<div class="campo"><span>Fotos e vídeos</span><div class="midias" id="listaMidias"></div>'+
     '<div class="midiabotoes">'+
       '<button class="btn sec" id="btnAddFoto" type="button">Adicionar foto</button>'+
@@ -519,9 +571,10 @@ function desenharForm(){
 function desenharMidias(){
   var midias=rascunho.midias||[];
   $('listaMidias').innerHTML = midias.length ? midias.map(function(m,i){
+    var src=urlMidia(m.src);
     var prev = m.tipo==='img'
-      ? '<img src="'+esc(m.src)+'" alt="">'
-      : '<video src="'+esc(m.src)+'#t=0.1" muted preload="metadata"></video>';
+      ? '<img src="'+esc(src)+'" alt="Prévia da foto '+(i+1)+'">'
+      : '<video src="'+esc(src)+'#t=0.1" muted preload="metadata"></video>';
     return '<div class="midia">'+
       '<button type="button" class="mv" data-macao="ver" data-mi="'+i+'" aria-label="Ver grande">'+prev+'</button>'+
       '<div class="mi"><div class="t">'+(m.tipo==='img'?'Foto':'Vídeo')+' '+(i+1)+'</div>'+
@@ -549,6 +602,10 @@ $('formEditor').addEventListener('input',function(e){
   }
   if(e.target.id==='frasesTexto'){
     rascunho.frases=e.target.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+    return;
+  }
+  if(e.target.id==='beneficiosTexto'){
+    rascunho.beneficios=e.target.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
     return;
   }
   if(e.target.hasAttribute('data-vid-audio')){
@@ -596,6 +653,21 @@ $('btnAplicar').addEventListener('click',function(){
     mostrarErro('erroEditor','Preencha o rótulo da aba antes de salvar.');
     return;
   }
+  if(!corValida(rascunho.cor)){
+    mostrarErro('erroEditor','Use uma cor válida no formato #7A1030.');
+    return;
+  }
+  if(!rascunho.tamanhos.length){
+    mostrarErro('erroEditor','Escolha pelo menos um tamanho disponível.');
+    return;
+  }
+  if(!/^R\$\s?\d{1,3}(?:\.\d{3})*,\d{2}$/.test(String(rascunho.precoPix||'').trim()) ||
+     !/^R\$\s?\d{1,3}(?:\.\d{3})*,\d{2}$/.test(String(rascunho.preco3x||'').trim())){
+    mostrarErro('erroEditor','Preencha os dois preços no formato R$ 179,90.');
+    return;
+  }
+  rascunho.frases=(rascunho.frases||[]).slice(0,15);
+  rascunho.beneficios=(rascunho.beneficios||[]).slice(0,6);
   var itens=lista();
   if(editando===null) itens.push(rascunho); else itens[editando]=rascunho;
   fecharEditor(); marcarSujo(); render(); toast('Salvo. Falta publicar.');
@@ -611,7 +683,7 @@ function escolherFoto(){
     toast('Enviando foto');
     reduzir(f)
       .then(function(blob){
-        return api('/api/admin/imagem',{method:'POST',headers:{'content-type':'image/jpeg'},body:blob});
+        return api('/api/admin/imagem',{method:'POST',headers:{'content-type':'image/webp'},body:blob});
       })
       .then(function(r){
         rascunho.midias.push({tipo:'img',src:r.url});
@@ -633,7 +705,7 @@ function reduzir(arquivo){
       c.toBlob(function(b){
         URL.revokeObjectURL(url);
         b ? ok(b) : falha(new Error('Não consegui processar essa imagem.'));
-      },'image/jpeg',0.85);
+      },'image/webp',0.84);
     };
     img.onerror=function(){ URL.revokeObjectURL(url); falha(new Error('Esse arquivo não é uma imagem válida.')); };
     img.src=url;
@@ -643,19 +715,21 @@ function reduzir(arquivo){
 /* ===== video ===== */
 function escolherVideo(){
   var inp=document.createElement('input');
-  inp.type='file'; inp.accept='video/mp4,video/quicktime,video/webm';
+  inp.type='file'; inp.accept='video/mp4,.mp4';
   inp.addEventListener('change',function(){
     var f=inp.files && inp.files[0]; if(!f) return;
-    var ct = f.type || 'video/mp4';
-    if(['video/mp4','video/quicktime','video/webm'].indexOf(ct)<0){
-      mostrarErro('erroEditor','Formato não aceito. Use MP4, MOV ou WEBM.'); return;
+    if(f.type && f.type!=='video/mp4' || !/\.mp4$/i.test(f.name||'')){
+      mostrarErro('erroEditor','Formato não aceito. Use MP4 para funcionar bem em celulares e computadores.'); return;
     }
     if(f.size > 40*1024*1024){
       mostrarErro('erroEditor','Vídeo acima de 40 MB. Grave um clipe mais curto ou comprima antes de subir.'); return;
     }
     mostrarErro('erroEditor','');
-    toast('Enviando vídeo, pode levar um instante');
-    api('/api/admin/video',{method:'POST',headers:{'content-type':ct},body:f})
+    toast('Verificando o vídeo');
+    validarDuracaoVideo(f).then(function(){
+      toast('Enviando vídeo, pode levar um instante');
+      return api('/api/admin/video',{method:'POST',headers:{'content-type':'video/mp4'},body:f});
+    })
       .then(function(r){
         rascunho.midias.push({tipo:'video',src:r.url,comAudio:false});
         desenharMidias(); toast('Vídeo adicionado');
@@ -665,14 +739,30 @@ function escolherVideo(){
   inp.click();
 }
 
+function validarDuracaoVideo(arquivo){
+  return new Promise(function(ok,falha){
+    var video=document.createElement('video'), url=URL.createObjectURL(arquivo);
+    video.preload='metadata';
+    video.onloadedmetadata=function(){
+      var duracao=video.duration;
+      URL.revokeObjectURL(url);
+      if(!isFinite(duracao)||duracao<=0) return falha(new Error('Não consegui ler esse vídeo.'));
+      if(duracao>30) return falha(new Error('Use um vídeo de até 30 segundos para o catálogo carregar rápido.'));
+      ok();
+    };
+    video.onerror=function(){URL.revokeObjectURL(url);falha(new Error('Esse arquivo não é um MP4 válido.'));};
+    video.src=url;
+  });
+}
+
 /* ===== ver foto/video grande ===== */
 function abrirLightbox(m){
   var img=$('lightboxImg'), vid=$('lightboxVideo');
   if(m.tipo==='img'){
-    img.src=m.src; img.classList.remove('oculto');
+    img.src=urlMidia(m.src); img.classList.remove('oculto');
     vid.classList.add('oculto'); vid.pause(); vid.removeAttribute('src'); vid.load();
   } else {
-    vid.src=m.src; vid.classList.remove('oculto');
+    vid.src=urlMidia(m.src); vid.classList.remove('oculto');
     img.classList.add('oculto'); img.removeAttribute('src');
   }
   $('lightbox').classList.add('on');
@@ -712,7 +802,7 @@ $('formSenha').addEventListener('submit',function(e){
   e.preventDefault();
   var nova=$('senhaNova').value;
   if(nova!==$('senhaNova2').value){ mostrarErro('erroSenha','As duas senhas novas estão diferentes.'); return; }
-  if(nova.length<8){ mostrarErro('erroSenha','A senha nova precisa de 8 caracteres ou mais.'); return; }
+  if(nova.length<12){ mostrarErro('erroSenha','A senha nova precisa de 12 caracteres ou mais.'); return; }
   var b=$('btnTrocarSenha'); b.disabled=true; b.textContent='Trocando';
   mostrarErro('erroSenha','');
   api('/api/admin/senha',{method:'POST',headers:{'content-type':'application/json'},
@@ -733,7 +823,7 @@ $('btnPublicar').addEventListener('click',function(){
       estado.kits=(secKits&&secKits.kits)||[];
       estado.kits2=(secKits2&&secKits2.kits)||[];
       estado.site=c.site||{};
-      marcarLimpo(); render(); toast('Publicado. Já está no ar.');
+      marcarLimpo(); render(); toast('Publicado. Pode levar até 1 minuto para aparecer.');
     })
     .catch(function(err){
       marcarSujo();
