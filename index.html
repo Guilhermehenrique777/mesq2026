@@ -1660,8 +1660,8 @@
   <section id="hero">
     <p class="hero-brand">Moda Fitness Feminina</p>
     <h1 class="hero-logo">MESQ.</h1>
-    <p class="hero-sub">Coleção</p>
-    <p class="hero-year">2026</p>
+    <p class="hero-sub" id="heroColecaoNome">Coleção</p>
+    <p class="hero-year" id="heroColecaoAno">2026</p>
     <a href="#kits" class="btn-primary">
       <span>Ver coleção</span>
     </a>
@@ -2730,6 +2730,8 @@
       .then(function(dados){
         var secoes = dados.secoes || [];
         var site   = dados.site   || {};
+        if (site.colecaoNome) document.getElementById('heroColecaoNome').textContent = site.colecaoNome;
+        if (site.colecaoAno)  document.getElementById('heroColecaoAno').textContent  = site.colecaoAno;
         var s1 = secoes.find(function(s){ return s.id === 'kits'; })  || secoes[0];
         var s2 = secoes.find(function(s){ return s.id === 'kits2'; }) || secoes[1];
         /* seção 1 primeiro: ela cria a sacola e os helpers usados pela 2 */

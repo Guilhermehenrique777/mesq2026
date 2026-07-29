@@ -35,7 +35,9 @@ const PBKDF2_ITER = 120000;
 const SEMENTE = {
   site: {
     whatsapp: '5511966050632',
-    freteTexto: 'Frete grátis para todo o Brasil em pedidos acima de R$ 199'
+    freteTexto: 'Frete grátis para todo o Brasil em pedidos acima de R$ 199',
+    colecaoNome: 'Coleção',
+    colecaoAno: '2026'
   },
   secoes: [
     {
@@ -173,7 +175,9 @@ async function salvarConteudo(request, env) {
   const conteudo = {
     site: (corpo.site && typeof corpo.site === 'object') ? {
       whatsapp: txt(corpo.site.whatsapp, 20) || SEMENTE.site.whatsapp,
-      freteTexto: txt(corpo.site.freteTexto, 200) || SEMENTE.site.freteTexto
+      freteTexto: txt(corpo.site.freteTexto, 200) || SEMENTE.site.freteTexto,
+      colecaoNome: txt(corpo.site.colecaoNome, 40) || SEMENTE.site.colecaoNome,
+      colecaoAno: txt(corpo.site.colecaoAno, 20) || SEMENTE.site.colecaoAno
     } : SEMENTE.site,
     secoes: SEMENTE.secoes.map(function (base) {
       const entrada = entradaPorId[base.id];

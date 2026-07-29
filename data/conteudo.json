@@ -1,7 +1,9 @@
 {
   "site": {
     "whatsapp": "5511966050632",
-    "freteTexto": "Frete grátis para todo o Brasil em pedidos acima de R$ 199"
+    "freteTexto": "Frete grátis para todo o Brasil em pedidos acima de R$ 199",
+    "colecaoNome": "Coleção",
+    "colecaoAno": "2026"
   },
   "secoes": [
     {

@@ -197,6 +197,7 @@
     <nav class="abas">
       <button class="aba on" id="abaKits" type="button">Top + Short</button>
       <button class="aba" id="abaKits2" type="button">Top + Legging</button>
+      <button class="aba" id="abaCapa" type="button">Capa</button>
     </nav>
   </header>
 
@@ -266,7 +267,7 @@
 'use strict';
 
 var $=function(id){return document.getElementById(id);};
-var estado={kits:[],kits2:[]}, aba='kits', sujo=false, editando=null, rascunho=null;
+var estado={kits:[],kits2:[],site:{}}, aba='kits', sujo=false, editando=null, rascunho=null;
 
 /* ===== tema ===== */
 var TEMA='mesq_admin_tema';
@@ -328,6 +329,7 @@ function abrirPainel(){
     var secKits2=(c.secoes||[]).find(function(s){return s.id==='kits2';});
     estado.kits=(secKits&&secKits.kits)||[];
     estado.kits2=(secKits2&&secKits2.kits)||[];
+    estado.site=c.site||{};
     $('capa').classList.add('oculto'); $('app').classList.remove('oculto');
     marcarLimpo(); render();
   });
@@ -337,16 +339,19 @@ function abrirPainel(){
 api('/api/sessao').then(function(s){ if(s.ok) abrirPainel(); }).catch(function(){});
 
 /* ===== abas ===== */
-var TITULOS={kits:'Top + Short',kits2:'Top + Legging'};
+var TITULOS={kits:'Top + Short',kits2:'Top + Legging',capa:'Capa do site'};
 function trocarAba(nova){
   aba=nova;
   $('abaKits').classList.toggle('on',aba==='kits');
   $('abaKits2').classList.toggle('on',aba==='kits2');
+  $('abaCapa').classList.toggle('on',aba==='capa');
   $('titulo').textContent=TITULOS[aba];
+  $('btnNovo').classList.toggle('oculto',aba==='capa');
   render();
 }
 $('abaKits').addEventListener('click',function(){trocarAba('kits');});
 $('abaKits2').addEventListener('click',function(){trocarAba('kits2');});
+$('abaCapa').addEventListener('click',function(){trocarAba('capa');});
 
 /* ===== estado de publicacao ===== */
 function marcarSujo(){
@@ -363,6 +368,7 @@ window.addEventListener('beforeunload',function(e){ if(sujo){e.preventDefault();
 function lista(){ return estado[aba]; }
 
 function render(){
+  if(aba==='capa'){ renderCapa(); return; }
   var itens=lista(), alvo=$('lista');
   var ativos=itens.filter(function(i){return i.ativo!==false;}).length;
   $('conta').textContent = itens.length ? (ativos+' no ar de '+itens.length) : '';
@@ -397,6 +403,20 @@ function render(){
       '</div>'+
     '</article>';
   }).join('');
+}
+
+function renderCapa(){
+  $('conta').textContent='';
+  $('lista').innerHTML=
+    '<div class="item"><div class="corpo" style="display:block;width:100%">'+
+      '<label class="campo"><span>Nome da coleção</span>'+
+        '<input type="text" id="capaNome" value="'+esc(estado.site.colecaoNome||'')+'" placeholder="Coleção"></label>'+
+      '<label class="campo" style="margin-bottom:0"><span>Ano (ou texto do lado)</span>'+
+        '<input type="text" id="capaAno" value="'+esc(estado.site.colecaoAno||'')+'" placeholder="2026"></label>'+
+    '</div></div>'+
+    '<p class="dica">É o texto grande na primeira tela do site, embaixo do logo MESQ. Ex.: "Coleção" + "2026".</p>';
+  $('capaNome').addEventListener('input',function(e){ estado.site.colecaoNome=e.target.value; marcarSujo(); });
+  $('capaAno').addEventListener('input',function(e){ estado.site.colecaoAno=e.target.value; marcarSujo(); });
 }
 
 $('lista').addEventListener('click',function(e){
@@ -663,13 +683,14 @@ $('formSenha').addEventListener('submit',function(e){
 /* ===== publicar ===== */
 $('btnPublicar').addEventListener('click',function(){
   var b=$('btnPublicar'); b.disabled=true; b.textContent='Publicando';
-  var corpo={secoes:[{id:'kits',kits:estado.kits},{id:'kits2',kits:estado.kits2}]};
+  var corpo={site:estado.site,secoes:[{id:'kits',kits:estado.kits},{id:'kits2',kits:estado.kits2}]};
   api('/api/admin/conteudo',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(corpo)})
     .then(function(c){
       var secKits=(c.secoes||[]).find(function(s){return s.id==='kits';});
       var secKits2=(c.secoes||[]).find(function(s){return s.id==='kits2';});
       estado.kits=(secKits&&secKits.kits)||[];
       estado.kits2=(secKits2&&secKits2.kits)||[];
+      estado.site=c.site||{};
       marcarLimpo(); render(); toast('Publicado. Já está no ar.');
     })
     .catch(function(err){
